@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  21 Jul 2008 10:12:26 pm
+  Creation date:  21 Jul 2008 10:59:23 pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_341EF80C__
-#define __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_341EF80C__
+#ifndef __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_62456A14__
+#define __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_62456A14__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -46,7 +46,9 @@ typedef unsigned long int floatint;
 class bitManglerEditor  : public AudioProcessorEditor,
                           public ChangeListener,
                           public AsyncUpdater,
-                          public ButtonListener
+                          public TextEditorListener,
+                          public ButtonListener,
+                          public ComboBoxListener
 {
 public:
     //==============================================================================
@@ -58,11 +60,16 @@ public:
 	String getBinaryString (floatint b, int d);
 	void changeListenerCallback(void *ptr);
 	void handleAsyncUpdate();
+	void textEditorTextChanged (TextEditor &editor);
+	void textEditorReturnKeyPressed (TextEditor &editor);
+	void textEditorEscapeKeyPressed (TextEditor &editor);
+	void textEditorFocusLost (TextEditor &editor);
     //[/UserMethods]
 
     void paint (Graphics& g);
     void resized();
     void buttonClicked (Button* buttonThatWasClicked);
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
 
     // Binary resources:
     static const char* lcd_bin;
@@ -92,12 +99,17 @@ private:
 	floatint ce;
 	floatint cm;
 	Font *lcdBigFont;
+	Font *lcdSmallFont;
     //[/UserVariables]
 
     //==============================================================================
     Label* bitDisplayInput;
     Label* bitDisplayOutput;
     ImageButton* processButton;
+    ComboBox* bitSelector;
+    TextEditor* bitRangeSelector;
+    ComboBox* bitOperation;
+    TextEditor* bitOperand;
     Image* internalCachedImage1;
 
     //==============================================================================
@@ -107,4 +119,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_341EF80C__
+#endif   // __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_62456A14__

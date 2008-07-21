@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  21 Jul 2008 10:12:26 pm
+  Creation date:  21 Jul 2008 10:59:23 pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -34,6 +34,10 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
       bitDisplayInput (0),
       bitDisplayOutput (0),
       processButton (0),
+      bitSelector (0),
+      bitRangeSelector (0),
+      bitOperation (0),
+      bitOperand (0),
       internalCachedImage1 (0)
 {
     addAndMakeVisible (bitDisplayInput = new Label (T("Bit Display"),
@@ -64,11 +68,68 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
 
     processButton->setImages (false, true, true,
                               ImageCache::getFromMemory (power_off_png, power_off_pngSize), 0.8428f, Colour (0x0),
-                              0, 1.0000f, Colour (0x32aeff88),
+                              0, 1.0000f, Colour (0xffffff),
                               ImageCache::getFromMemory (power_on_png, power_on_pngSize), 1.0000f, Colour (0x0));
+    addAndMakeVisible (bitSelector = new ComboBox (T("Bit Selector")));
+    bitSelector->setTooltip (T("Bit Selector"));
+    bitSelector->setEditableText (false);
+    bitSelector->setJustificationType (Justification::centredLeft);
+    bitSelector->setTextWhenNothingSelected (String::empty);
+    bitSelector->setTextWhenNoChoicesAvailable (T("(no choices)"));
+    bitSelector->addItem (T("Bit"), 1);
+    bitSelector->addItem (T("Bit Range"), 2);
+    bitSelector->addItem (T("All Bits"), 3);
+    bitSelector->addListener (this);
+
+    addAndMakeVisible (bitRangeSelector = new TextEditor (T("Bit Range Selector")));
+    bitRangeSelector->setTooltip (T("Bit Range Selector"));
+    bitRangeSelector->setMultiLine (false);
+    bitRangeSelector->setReturnKeyStartsNewLine (false);
+    bitRangeSelector->setReadOnly (false);
+    bitRangeSelector->setScrollbarsShown (false);
+    bitRangeSelector->setCaretVisible (true);
+    bitRangeSelector->setPopupMenuEnabled (true);
+    bitRangeSelector->setColour (TextEditor::textColourId, Colours::white);
+    bitRangeSelector->setColour (TextEditor::backgroundColourId, Colour (0x6e000000));
+    bitRangeSelector->setColour (TextEditor::shadowColourId, Colour (0x0));
+    bitRangeSelector->setColour (TextEditor::caretColourId, Colours::white);
+    bitRangeSelector->setText (T("1-32"));
+
+    addAndMakeVisible (bitOperation = new ComboBox (T("Bit Operation")));
+    bitOperation->setTooltip (T("Bit Operation"));
+    bitOperation->setEditableText (false);
+    bitOperation->setJustificationType (Justification::centredLeft);
+    bitOperation->setTextWhenNothingSelected (String::empty);
+    bitOperation->setTextWhenNoChoicesAvailable (T("(no choices)"));
+    bitOperation->addItem (T("XOR"), 1);
+    bitOperation->addItem (T("AND"), 2);
+    bitOperation->addItem (T("OR"), 3);
+    bitOperation->addItem (T("CLEAR"), 4);
+    bitOperation->addItem (T("SET"), 5);
+    bitOperation->addItem (T("SHIFT LEFT"), 6);
+    bitOperation->addItem (T("SHIFT RIGHT"), 7);
+    bitOperation->addListener (this);
+
+    addAndMakeVisible (bitOperand = new TextEditor (T("Bit Operand")));
+    bitOperand->setTooltip (T("Bit Operand"));
+    bitOperand->setMultiLine (false);
+    bitOperand->setReturnKeyStartsNewLine (false);
+    bitOperand->setReadOnly (false);
+    bitOperand->setScrollbarsShown (true);
+    bitOperand->setCaretVisible (true);
+    bitOperand->setPopupMenuEnabled (true);
+    bitOperand->setColour (TextEditor::textColourId, Colours::white);
+    bitOperand->setColour (TextEditor::backgroundColourId, Colour (0x6e000000));
+    bitOperand->setColour (TextEditor::shadowColourId, Colour (0x0));
+    bitOperand->setColour (TextEditor::caretColourId, Colours::white);
+    bitOperand->setText (T("1"));
+
     internalCachedImage1 = ImageCache::getFromMemory (metal2_png, metal2_pngSize);
 
     //[UserPreSize]
+	bitOperand->addListener (this);
+	bitRangeSelector->addListener (this);
+
 	owner = ownerFilter;
 	ownerFilter->addChangeListener (this);
 
@@ -79,8 +140,29 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
 	lcdBigFont->setExtraKerningFactor (0.05f);
 	lcdBigFont->setHeight (16.0f);
 
+	lcdSmallFont = new Font (*typeFace);
+	lcdSmallFont->setStyleFlags (Font::bold);
+	lcdSmallFont->setHeight (9.0f);
+
+	bitOperand->applyFontToAllText (*lcdSmallFont);
+	bitRangeSelector->applyFontToAllText (*lcdSmallFont);
+	bitOperand->setFont (*lcdSmallFont);
+	bitRangeSelector->setFont (*lcdSmallFont);
+
+	bitOperation->setColour (ComboBox::backgroundColourId, Colour (0x6e000000));
+	bitSelector->setColour (ComboBox::backgroundColourId, Colour (0x6e000000));
+	bitOperation->setColour (ComboBox::textColourId, Colours::white);
+	bitSelector->setColour (ComboBox::textColourId, Colours::white);
+	bitRangeSelector->setColour (TextEditor::highlightedTextColourId, Colours::white);
+	bitOperand->setColour (TextEditor::highlightedTextColourId, Colours::white);
+
 	bitDisplayInput->setFont (*lcdBigFont);
 	bitDisplayOutput->setFont (*lcdBigFont);
+
+	processButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 0.8428f, Colour (0x0),
+                              0, 1.0000f, Colour (0x32aeff88),
+                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 1.0000f, Colour (0x0));
     //[/UserPreSize]
 
     setSize (380, 155);
@@ -97,6 +179,10 @@ bitManglerEditor::~bitManglerEditor()
     deleteAndZero (bitDisplayInput);
     deleteAndZero (bitDisplayOutput);
     deleteAndZero (processButton);
+    deleteAndZero (bitSelector);
+    deleteAndZero (bitRangeSelector);
+    deleteAndZero (bitOperation);
+    deleteAndZero (bitOperand);
     ImageCache::release (internalCachedImage1);
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -140,7 +226,11 @@ void bitManglerEditor::resized()
 {
     bitDisplayInput->setBounds (8, 8, 360, 40);
     bitDisplayOutput->setBounds (8, 108, 360, 40);
-    processButton->setBounds (176, 64, 32, 32);
+    processButton->setBounds (336, 64, 32, 32);
+    bitSelector->setBounds (8, 72, 64, 16);
+    bitRangeSelector->setBounds (80, 72, 48, 16);
+    bitOperation->setBounds (136, 72, 64, 16);
+    bitOperand->setBounds (208, 72, 48, 16);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -153,11 +243,55 @@ void bitManglerEditor::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == processButton)
     {
         //[UserButtonCode_processButton] -- add your button handler code here..
+		if (owner->isProcessing())
+		{
+			owner->getCallbackLock().enter();
+			owner->stopProcessing();
+			owner->getCallbackLock().exit();
+
+			processButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 0.8428f, Colour (0x0),
+                              0, 1.0000f, Colour (0x32aeff88),
+                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 1.0000f, Colour (0x0));
+		}
+		else
+		{
+			owner->getCallbackLock().enter();
+			owner->startProcessing();
+			owner->getCallbackLock().exit();
+
+			processButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 0.8428f, Colour (0x0),
+                              0, 1.0000f, Colour (0x32aeff88),
+                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 1.0000f, Colour (0x0));
+		}
+
+
         //[/UserButtonCode_processButton]
     }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
+}
+
+void bitManglerEditor::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+{
+    //[UsercomboBoxChanged_Pre]
+    //[/UsercomboBoxChanged_Pre]
+
+    if (comboBoxThatHasChanged == bitSelector)
+    {
+        //[UserComboBoxCode_bitSelector] -- add your combo box handling code here..
+        //[/UserComboBoxCode_bitSelector]
+    }
+    else if (comboBoxThatHasChanged == bitOperation)
+    {
+        //[UserComboBoxCode_bitOperation] -- add your combo box handling code here..
+        //[/UserComboBoxCode_bitOperation]
+    }
+
+    //[UsercomboBoxChanged_Post]
+    //[/UsercomboBoxChanged_Post]
 }
 
 
@@ -242,6 +376,31 @@ void bitManglerEditor::updateBitDisplay()
 	bitDisplayInput->setText (in, false);
 	bitDisplayOutput->setText (out, false);
 }
+
+void bitManglerEditor::textEditorTextChanged (TextEditor &editor)
+{
+	if (&editor == bitOperand)
+	{
+		Logger::writeToLog (T("operand changed"));
+	}
+
+	if (&editor == bitRangeSelector)
+	{
+		Logger::writeToLog (T("bitSelector changed"));
+	}
+}
+
+void bitManglerEditor::textEditorReturnKeyPressed (TextEditor &editor)
+{
+}
+
+void bitManglerEditor::textEditorEscapeKeyPressed (TextEditor &editor)
+{
+}
+
+void bitManglerEditor::textEditorFocusLost (TextEditor &editor)
+{
+}
 //[/MiscUserCode]
 
 
@@ -254,7 +413,7 @@ void bitManglerEditor::updateBitDisplay()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="bitManglerEditor" componentName=""
-                 parentClasses="public AudioProcessorEditor, public ChangeListener, public AsyncUpdater"
+                 parentClasses="public AudioProcessorEditor, public ChangeListener, public AsyncUpdater, public TextEditorListener"
                  constructorParams="DemoJuceFilter* const ownerFilter" variableInitialisers="AudioProcessorEditor (ownerFilter)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
                  fixedSize="1" initialWidth="380" initialHeight="155">
@@ -278,11 +437,29 @@ BEGIN_JUCER_METADATA
          focusDiscardsChanges="0" fontname="Default monospaced font" fontsize="16"
          bold="1" italic="0" justification="36"/>
   <IMAGEBUTTON name="Process" id="21d9e966d47b47a8" memberName="processButton"
-               virtualName="" explicitFocusOrder="0" pos="176 64 32 32" buttonText="new button"
+               virtualName="" explicitFocusOrder="0" pos="336 64 32 32" buttonText="new button"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="power_off_png" opacityNormal="0.842767298" colourNormal="0"
-               resourceOver="" opacityOver="1" colourOver="32aeff88" resourceDown="power_on_png"
+               resourceOver="" opacityOver="1" colourOver="ffffff" resourceDown="power_on_png"
                opacityDown="1" colourDown="0"/>
+  <COMBOBOX name="Bit Selector" id="50bc9b025a0d3a47" memberName="bitSelector"
+            virtualName="" explicitFocusOrder="0" pos="8 72 64 16" tooltip="Bit Selector"
+            editable="0" layout="33" items="Bit&#10;Bit Range&#10;All Bits" textWhenNonSelected=""
+            textWhenNoItems="(no choices)"/>
+  <TEXTEDITOR name="Bit Range Selector" id="d4dcdcbfff58821c" memberName="bitRangeSelector"
+              virtualName="" explicitFocusOrder="0" pos="80 72 48 16" tooltip="Bit Range Selector"
+              textcol="ffffffff" bkgcol="6e000000" shadowcol="0" caretcol="ffffffff"
+              initialText="1-32" multiline="0" retKeyStartsLine="0" readonly="0"
+              scrollbars="0" caret="1" popupmenu="1"/>
+  <COMBOBOX name="Bit Operation" id="5caf3e9e29103899" memberName="bitOperation"
+            virtualName="" explicitFocusOrder="0" pos="136 72 64 16" tooltip="Bit Operation"
+            editable="0" layout="33" items="XOR&#10;AND&#10;OR&#10;CLEAR&#10;SET&#10;SHIFT LEFT&#10;SHIFT RIGHT"
+            textWhenNonSelected="" textWhenNoItems="(no choices)"/>
+  <TEXTEDITOR name="Bit Operand" id="1afdf663cab7cd72" memberName="bitOperand"
+              virtualName="" explicitFocusOrder="0" pos="208 72 48 16" tooltip="Bit Operand"
+              textcol="ffffffff" bkgcol="6e000000" shadowcol="0" caretcol="ffffffff"
+              initialText="1" multiline="0" retKeyStartsLine="0" readonly="0"
+              scrollbars="1" caret="1" popupmenu="1"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
