@@ -104,6 +104,10 @@ public:
 
 	float getCurrentSample();
 	float getCurrentConvertedSample();
+	void stopProcessing();
+	void startProcessing();
+	bool isProcessing();
+
 private:
     // this is our gain - the UI and the host can access this by getting/setting
     // parameter 0.
@@ -111,6 +115,7 @@ private:
 	float currentSample;
 	float currentConvertedSample;
 	unsigned int bufferCycle;
+	bool processing;
 };
 
 

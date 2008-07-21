@@ -14,7 +14,7 @@ DemoJuceFilter::DemoJuceFilter()
     lastPosInfo.timeSigDenominator = 4;
     lastPosInfo.bpm = 120;
 	editor = 0;
-
+	processing = true;
 	currentSample = 0.0f;
 	bufferCycle = 0;
 }
@@ -110,17 +110,17 @@ void DemoJuceFilter::processBlock (AudioSampleBuffer& buffer,
 
 			if (x == 2 && channel == 0 && bufferCycle == 0)
 			{
+				currentConvertedSample = *(p+x);
+
 				if (editor)
 					editor->triggerAsyncUpdate();
-
-				currentConvertedSample = *(p+x);
 			}
 		}
 	}
 
 	bufferCycle++;
 
-	if (bufferCycle == 7)
+	if (bufferCycle == 10)
 		bufferCycle = 0;
 }
 
@@ -157,4 +157,21 @@ float DemoJuceFilter::getCurrentSample()
 float DemoJuceFilter::getCurrentConvertedSample()
 {
 	return (currentConvertedSample);
+}
+
+void DemoJuceFilter::stopProcessing()
+{
+	processing = false;
+	Logger::writeToLog (T("stopProcessing()"));
+}
+
+void DemoJuceFilter::startProcessing()
+{
+	processing = true;
+	Logger::writeToLog (T("startProcessing()"));
+}
+
+bool DemoJuceFilter::isProcessing()
+{
+	return (processing);
 }
