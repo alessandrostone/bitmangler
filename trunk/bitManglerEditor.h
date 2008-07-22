@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  21 Jul 2008 10:59:23 pm
+  Creation date:  22 Jul 2008 4:21:23 pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,13 +19,13 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_62456A14__
-#define __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_62456A14__
+#ifndef __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_9815D7FA__
+#define __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_9815D7FA__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
 #include "bitMangler.h"
-
+#include "bitManglerFloat.h"
 
 #define BITS_FLT 32
 #define MANT_FLT 23
@@ -45,10 +45,8 @@ typedef unsigned long int floatint;
 */
 class bitManglerEditor  : public AudioProcessorEditor,
                           public ChangeListener,
-                          public AsyncUpdater,
                           public TextEditorListener,
-                          public ButtonListener,
-                          public ComboBoxListener
+                          public ButtonListener
 {
 public:
     //==============================================================================
@@ -59,17 +57,16 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
 	String getBinaryString (floatint b, int d);
 	void changeListenerCallback(void *ptr);
-	void handleAsyncUpdate();
 	void textEditorTextChanged (TextEditor &editor);
 	void textEditorReturnKeyPressed (TextEditor &editor);
 	void textEditorEscapeKeyPressed (TextEditor &editor);
 	void textEditorFocusLost (TextEditor &editor);
+
     //[/UserMethods]
 
     void paint (Graphics& g);
     void resized();
     void buttonClicked (Button* buttonThatWasClicked);
-    void comboBoxChanged (ComboBox* comboBoxThatHasChanged);
 
     // Binary resources:
     static const char* lcd_bin;
@@ -88,11 +85,11 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	DemoJuceFilter *owner;
 	void updateBitDisplay();
-	union mix
+	union
 	{
+		floatint i;
 		float f;
-		unsigned long int i;
-	} uSample, uConvertedSample;
+	}uSample, uConvertedSample;
 
 	floatint e;
 	floatint m;
@@ -100,16 +97,22 @@ private:
 	floatint cm;
 	Font *lcdBigFont;
 	Font *lcdSmallFont;
+
+	enum operations
+	{
+		XOR,
+		AND,
+		OR,
+		CLEAR,
+		SET
+	};
     //[/UserVariables]
 
     //==============================================================================
     Label* bitDisplayInput;
     Label* bitDisplayOutput;
     ImageButton* processButton;
-    ComboBox* bitSelector;
-    TextEditor* bitRangeSelector;
-    ComboBox* bitOperation;
-    TextEditor* bitOperand;
+    TextEditor* bitFormula;
     Image* internalCachedImage1;
 
     //==============================================================================
@@ -119,4 +122,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_62456A14__
+#endif   // __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_9815D7FA__
