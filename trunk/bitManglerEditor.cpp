@@ -251,18 +251,10 @@ void bitManglerEditor::updateBitDisplay()
 
 	const float currentSample = owner->getCurrentSample();
 	const float currentConvertedSample = owner->getCurrentConvertedSample();
-	const bool process = owner->isProcessing();
 	owner->getCallbackLock().exit();
 
 	Logger::writeToLog (String::formatted (T("s:%.8f ps:%.8f"), currentSample, currentConvertedSample));
-	if (!process)
-	{
-		processButton->setImages (false, true, true,
-                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 0.8428f, Colour (0x0),
-                              0, 1.0000f, Colour (0x0),
-                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 1.0000f, Colour (0x0));
-	}
-
+	
 	uSample.f = currentSample;
 	uConvertedSample.f = currentConvertedSample;
 
@@ -315,7 +307,20 @@ void bitManglerEditor::textEditorReturnKeyPressed (TextEditor &editor)
 {
 	if (&editor == bitFormula)
 	{
-		owner->parseFormula (bitFormula->getText());
+		if (owner->parseFormula (bitFormula->getText()))
+		{
+			processButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 0.8428f, Colour (0x0),
+                              0, 1.0000f, Colour (0x0),
+                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 1.0000f, Colour (0x0));
+		}
+		else
+		{
+			processButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 0.8428f, Colour (0x0),
+                              0, 1.0000f, Colour (0x0),
+                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 1.0000f, Colour (0x0));
+		}
 	}
 }
 

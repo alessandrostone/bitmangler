@@ -108,7 +108,7 @@ public:
 	float getCurrentSample();
 	float getCurrentConvertedSample();
 	void stopProcessing();
-	void startProcessing();
+	void startProcessing(bool p=true);
 	bool isProcessing();
 	float process(float sample);
 
@@ -116,8 +116,8 @@ public:
 	void setSetBit (int pos);
 	void setClearBit (int pos);
 	void clearTable();
-	void parseFormula (String s);
-	void parseFunction (String f);
+	bool parseFormula (String s);
+	bool parseFunction (String f);
 	String getLastFormula();
 
 private:
