@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  22 Jul 2008 4:21:23 pm
+  Creation date:  22 Jul 2008 10:48:10 pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -19,8 +19,8 @@
   ==============================================================================
 */
 
-#ifndef __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_9815D7FA__
-#define __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_9815D7FA__
+#ifndef __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_3611E792__
+#define __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_3611E792__
 
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
@@ -45,8 +45,8 @@ typedef unsigned long int floatint;
 */
 class bitManglerEditor  : public AudioProcessorEditor,
                           public ChangeListener,
-                          public TextEditorListener,
-                          public ButtonListener
+                          public ButtonListener,
+                          public SliderListener
 {
 public:
     //==============================================================================
@@ -62,11 +62,21 @@ public:
 	void textEditorEscapeKeyPressed (TextEditor &editor);
 	void textEditorFocusLost (TextEditor &editor);
 
+		enum operations
+	{
+		XOR,
+		AND,
+		OR,
+		CLEAR,
+		SET
+	};
+
     //[/UserMethods]
 
     void paint (Graphics& g);
     void resized();
     void buttonClicked (Button* buttonThatWasClicked);
+    void sliderValueChanged (Slider* sliderThatWasMoved);
 
     // Binary resources:
     static const char* lcd_bin;
@@ -97,22 +107,26 @@ private:
 	floatint cm;
 	Font *lcdBigFont;
 	Font *lcdSmallFont;
-
-	enum operations
-	{
-		XOR,
-		AND,
-		OR,
-		CLEAR,
-		SET
-	};
     //[/UserVariables]
 
     //==============================================================================
+    ToggleButton* andBitMod;
+    ToggleButton* xorBitMod;
     Label* bitDisplayInput;
     Label* bitDisplayOutput;
     ImageButton* processButton;
-    TextEditor* bitFormula;
+    Label* andRange;
+    Label* xorRange;
+    Label* clearRange;
+    Label* setRange;
+    ToggleButton* xorToggle;
+    ToggleButton* andToggle;
+    ToggleButton* clearToggle;
+    ToggleButton* setToggle;
+    Slider* xorSlider;
+    Slider* andSlider;
+    Slider* clearSlider;
+    Slider* setSlider;
     Image* internalCachedImage1;
 
     //==============================================================================
@@ -122,4 +136,4 @@ private:
 };
 
 
-#endif   // __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_9815D7FA__
+#endif   // __JUCER_HEADER_BITMANGLEREDITOR_BITMANGLEREDITOR_3611E792__

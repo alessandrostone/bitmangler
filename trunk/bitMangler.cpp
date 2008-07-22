@@ -15,9 +15,9 @@ DemoJuceFilter::DemoJuceFilter()
     lastPosInfo.bpm = 120;
 	editor = 0;
 	processing = true;
+	xorProcessing = andProcessing = clearProcessing = setProcessing = false;
 	currentSample = 0.0f;
 	bufferCycle = 0;
-	lastFormula = T("SETBIT(1-26);");
 	clearTable();
 }
 
@@ -163,18 +163,11 @@ float DemoJuceFilter::getCurrentConvertedSample()
 void DemoJuceFilter::stopProcessing()
 {
 	processing = false;
-	clearTable();
-
 	Logger::writeToLog (T("stopProcessing()"));
 }
 
-void DemoJuceFilter::startProcessing(bool p)
+void DemoJuceFilter::startProcessing()
 {
-	if (p)
-	{
-		parseFormula (lastFormula);
-	}
-
 	processing = true;
 	Logger::writeToLog (T("startProcessing()"));
 }
@@ -191,19 +184,19 @@ float DemoJuceFilter::process(float sample)
 		return (sample);
 	}
 
-	float ret = 0.0f;
+	float ret = sample;
 
 	for (int x=0; x<32; x++)
 	{
-		if (xorBits[x])
+		if (xorBits[x] && xorProcessing)
 		{
 			ret = xorbit (sample, x, xorWith[x]);
 		}
-		if (setBits[x])
+		if (setBits[x] && setProcessing)
 		{
 			ret = setbit (sample, x);
 		}
-		if (clearBits[x])
+		if (clearBits[x] && clearProcessing)
 		{
 			ret = clearbit (sample, x);
 		}
@@ -213,9 +206,67 @@ float DemoJuceFilter::process(float sample)
 }
 
 void DemoJuceFilter::setXorBit (int pos, bool bit)
-{
+{	
+	clearXorTable();
 	xorBits.set (pos-1, true);
 	xorWith.set (pos-1, bit);
+}
+
+void DemoJuceFilter::setAndBit (int pos, bool bit)
+{
+	clearAndTable();
+	andBits.set (pos-1, true);
+	andWith.set (pos-1, bit);
+}
+
+void DemoJuceFilter::setClearBit (int pos)
+{
+	clearClearTable();
+	clearBits.set (pos-1, true);
+}
+
+void DemoJuceFilter::setSetBit (int pos)
+{
+	clearSetTable();
+	setBits.set (pos-1, true);
+}
+
+void DemoJuceFilter::clearXorTable()
+{
+	Logger::writeToLog (T("clearXorTable()"));
+	for (int x=0; x<32; x++)
+	{
+		xorBits.set (x, false);
+		xorWith.set (x, false);
+	}
+}
+
+void DemoJuceFilter::clearAndTable()
+{
+	Logger::writeToLog (T("clearAndTable()"));
+	for (int x=0; x<32; x++)
+	{
+		andBits.set (x, false);
+		andWith.set (x, false);
+	}
+}
+
+void DemoJuceFilter::clearSetTable()
+{
+	Logger::writeToLog (T("clearSetTable()"));
+	for (int x=0; x<32; x++)
+	{
+		setBits.set (x, false);
+	}
+}
+
+void DemoJuceFilter::clearClearTable()
+{
+	Logger::writeToLog (T("clearClearTable()"));
+	for (int x=0; x<32; x++)
+	{
+		clearBits.set (x, false);
+	}
 }
 
 void DemoJuceFilter::clearTable()
@@ -229,219 +280,27 @@ void DemoJuceFilter::clearTable()
 	}
 }
 
-void DemoJuceFilter::setClearBit (int pos)
+void DemoJuceFilter::setProcess (int processDef, bool b)
 {
-	clearBits.set (pos-1, true);
-}
-
-void DemoJuceFilter::setSetBit (int pos)
-{
-	setBits.set (pos-1, true);
-}
-
-bool DemoJuceFilter::parseFormula (String s)
-{
-	stopProcessing();
-
-	if (s.contains (T(";")))
+	switch (processDef)
 	{
-		/* we have a selecetion of bits/bit ranges */
-		StringArray functionList;
-		functionList.addTokens (s, T(";"), String::empty);
-
-		for (int fid=0; fid<functionList.size(); fid++)
-		{
-			if (!functionList[fid].isEmpty())
-			{
-				if (!parseFunction (functionList[fid]))
-				{
-					Logger::writeToLog (T("parse incomplete"));
-					return (false);
-				}
-			}
-		}
-
-		Logger::writeToLog (T("parse complete"));
+		case bitManglerEditor::XOR:
+			xorProcessing = b;
+			break;
 		
-		startProcessing (false);
-		lastFormula = s;
-		return (true);
+		case bitManglerEditor::AND:
+			andProcessing = b;
+			break;
+
+		case bitManglerEditor::CLEAR:
+			clearProcessing = b;
+			break;
+
+		case bitManglerEditor::SET:
+			setProcessing = b;
+			break;
+
+		default:
+			break;
 	}
-
-	return (false);
-}
-
-bool DemoJuceFilter::parseFunction (String f)
-{
-	if (f.isEmpty())
-	{
-		return (false);
-	}
-
-	if (!f.contains(T("(")) && !f.contains(T(")")) && !f.contains(T(";")))
-	{
-		Logger::writeToLog (T("can't parse this function"));
-		return (false);
-	}
-
-	StringArray p;
-
-	const String fname = f.upToFirstOccurrenceOf (T("("), false, true).toUpperCase();
-	const String params = f.fromFirstOccurrenceOf (T("("), false, true).replaceCharacter(')', '\0');
-
-	if (fname == T("XORBIT"))
-	{
-		p.addTokens (params, T(","), String::empty);
-
-		String bitPosition = p[0];
-		const int bitValue = p[1].getIntValue();
-
-		Logger::writeToLog (T("xorbit found"));
-
-		if (bitPosition.contains(T("-")))
-		{
-			p.clear();
-			p.addTokens (bitPosition, T("-"), String::empty);
-
-			const int start	= p[0].getIntValue();
-			const int end	= p[1].getIntValue();
-
-			if (start > end)
-			{
-				Logger::writeToLog (T("inavlid bit range"));
-				return (false);
-			}
-			else
-			{
-				Logger::writeToLog (String::formatted (T("bit range %d-%d"), start, end));
-
-				for (int pos=start; pos<=end; pos++)
-				{
-					setXorBit (pos, (bool)bitValue);
-				}
-
-				return (true);
-			}
-		}
-		else
-		{
-			const int pos = p[0].getIntValue();
-			if (pos > 0 && pos < 33)
-			{
-				setXorBit (pos, (bool)bitValue);
-			}
-
-			return (true);
-		}
-	}
-
-	else if (fname == T("ORBIT"))
-	{
-		Logger::writeToLog (T("orbit found"));
-
-		return (true);
-	}
-	else if (fname == T("SETBIT"))
-	{
-		p.addTokens (params, T(","), String::empty);
-
-		String bitPosition = p[0];
-
-		Logger::writeToLog (T("setbit found"));
-
-		if (bitPosition.contains(T("-")))
-		{
-			p.clear();
-			p.addTokens (bitPosition, T("-"), String::empty);
-
-			const int start	= p[0].getIntValue();
-			const int end	= p[1].getIntValue();
-
-			if (start > end)
-			{
-				Logger::writeToLog (T("inavlid bit range"));
-				return (false);
-			}
-			else
-			{
-				Logger::writeToLog (String::formatted (T("bit range %d-%d"), start, end));
-
-				for (int pos=start; pos<=end; pos++)
-				{
-					Logger::writeToLog (T("set bits"));
-					setSetBit (pos);
-				}
-				Logger::writeToLog (T("return true"));
-				return (true);
-			}
-		}
-		else
-		{
-			const int pos = p[0].getIntValue();
-			if (pos > 0 && pos < 33)
-			{
-				setSetBit (pos);
-			}
-
-			return (true);
-		}
-	}
-
-	else if (fname == T("CLEARBIT"))
-	{
-		p.addTokens (params, T(","), String::empty);
-
-		String bitPosition = p[0];
-
-		Logger::writeToLog (T("clearbit found"));
-
-		if (bitPosition.contains(T("-")))
-		{
-			p.clear();
-			p.addTokens (bitPosition, T("-"), String::empty);
-
-			const int start	= p[0].getIntValue();
-			const int end	= p[1].getIntValue();
-
-			if (start > end)
-			{
-				Logger::writeToLog (T("inavlid bit range"));
-				return (false);
-			}
-			else
-			{
-				Logger::writeToLog (String::formatted (T("bit range %d-%d"), start, end));
-
-				for (int pos=start; pos<=end; pos++)
-				{
-					setClearBit (pos);
-				}
-
-				return (true);
-			}
-		}
-		else
-		{
-			const int pos = p[0].getIntValue();
-			if (pos > 0 && pos < 33)
-			{
-				setClearBit (pos);
-			}
-
-			return (true);
-		}
-	}
-	else
-	{
-		Logger::writeToLog (T("return false"));
-		return (false);
-	}
-
-	Logger::writeToLog (T("return false"));
-	return (false);
-}
-
-String DemoJuceFilter::getLastFormula()
-{
-	return (lastFormula);
 }
