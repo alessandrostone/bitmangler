@@ -17,7 +17,7 @@ DemoJuceFilter::DemoJuceFilter()
 	processing = true;
 	currentSample = 0.0f;
 	bufferCycle = 0;
-	lastFormula = T("SETBIT(1-24);");
+	lastFormula = T("SETBIT(1-26);");
 	clearTable();
 }
 
@@ -96,6 +96,9 @@ void DemoJuceFilter::releaseResources()
 void DemoJuceFilter::processBlock (AudioSampleBuffer& buffer,
                                    MidiBuffer& midiMessages)
 {
+	if (!isProcessing())
+		return;
+
 	for (int channel = 0; channel < getNumInputChannels(); ++channel)
 	{
 		float *p = buffer.getSampleData (channel);
@@ -165,9 +168,12 @@ void DemoJuceFilter::stopProcessing()
 	Logger::writeToLog (T("stopProcessing()"));
 }
 
-void DemoJuceFilter::startProcessing()
+void DemoJuceFilter::startProcessing(bool p)
 {
-	parseFormula (lastFormula);
+	if (p)
+	{
+		parseFormula (lastFormula);
+	}
 
 	processing = true;
 	Logger::writeToLog (T("startProcessing()"));
@@ -233,7 +239,7 @@ void DemoJuceFilter::setSetBit (int pos)
 	setBits.set (pos-1, true);
 }
 
-void DemoJuceFilter::parseFormula (String s)
+bool DemoJuceFilter::parseFormula (String s)
 {
 	stopProcessing();
 
@@ -245,24 +251,37 @@ void DemoJuceFilter::parseFormula (String s)
 
 		for (int fid=0; fid<functionList.size(); fid++)
 		{
-			parseFunction (functionList[fid]);
+			if (!functionList[fid].isEmpty())
+			{
+				if (!parseFunction (functionList[fid]))
+				{
+					Logger::writeToLog (T("parse incomplete"));
+					return (false);
+				}
+			}
 		}
 
+		Logger::writeToLog (T("parse complete"));
+		
+		startProcessing (false);
 		lastFormula = s;
+		return (true);
 	}
+
+	return (false);
 }
 
-void DemoJuceFilter::parseFunction (String f)
+bool DemoJuceFilter::parseFunction (String f)
 {
 	if (f.isEmpty())
 	{
-		return;
+		return (false);
 	}
 
 	if (!f.contains(T("(")) && !f.contains(T(")")) && !f.contains(T(";")))
 	{
 		Logger::writeToLog (T("can't parse this function"));
-		return;
+		return (false);
 	}
 
 	StringArray p;
@@ -290,7 +309,7 @@ void DemoJuceFilter::parseFunction (String f)
 			if (start > end)
 			{
 				Logger::writeToLog (T("inavlid bit range"));
-				return;
+				return (false);
 			}
 			else
 			{
@@ -300,6 +319,8 @@ void DemoJuceFilter::parseFunction (String f)
 				{
 					setXorBit (pos, (bool)bitValue);
 				}
+
+				return (true);
 			}
 		}
 		else
@@ -309,15 +330,18 @@ void DemoJuceFilter::parseFunction (String f)
 			{
 				setXorBit (pos, (bool)bitValue);
 			}
+
+			return (true);
 		}
 	}
 
-	if (fname == T("ORBIT"))
+	else if (fname == T("ORBIT"))
 	{
 		Logger::writeToLog (T("orbit found"));
-	}
 
-	if (fname == T("SETBIT"))
+		return (true);
+	}
+	else if (fname == T("SETBIT"))
 	{
 		p.addTokens (params, T(","), String::empty);
 
@@ -336,7 +360,7 @@ void DemoJuceFilter::parseFunction (String f)
 			if (start > end)
 			{
 				Logger::writeToLog (T("inavlid bit range"));
-				return;
+				return (false);
 			}
 			else
 			{
@@ -344,10 +368,11 @@ void DemoJuceFilter::parseFunction (String f)
 
 				for (int pos=start; pos<=end; pos++)
 				{
+					Logger::writeToLog (T("set bits"));
 					setSetBit (pos);
 				}
-
-				return;
+				Logger::writeToLog (T("return true"));
+				return (true);
 			}
 		}
 		else
@@ -357,10 +382,12 @@ void DemoJuceFilter::parseFunction (String f)
 			{
 				setSetBit (pos);
 			}
+
+			return (true);
 		}
 	}
 
-	if (fname == T("CLEARBIT"))
+	else if (fname == T("CLEARBIT"))
 	{
 		p.addTokens (params, T(","), String::empty);
 
@@ -379,7 +406,7 @@ void DemoJuceFilter::parseFunction (String f)
 			if (start > end)
 			{
 				Logger::writeToLog (T("inavlid bit range"));
-				return;
+				return (false);
 			}
 			else
 			{
@@ -389,6 +416,8 @@ void DemoJuceFilter::parseFunction (String f)
 				{
 					setClearBit (pos);
 				}
+
+				return (true);
 			}
 		}
 		else
@@ -398,8 +427,18 @@ void DemoJuceFilter::parseFunction (String f)
 			{
 				setClearBit (pos);
 			}
+
+			return (true);
 		}
 	}
+	else
+	{
+		Logger::writeToLog (T("return false"));
+		return (false);
+	}
+
+	Logger::writeToLog (T("return false"));
+	return (false);
 }
 
 String DemoJuceFilter::getLastFormula()
