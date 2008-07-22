@@ -3,7 +3,7 @@
 
   This is an automatically generated file created by the Jucer!
 
-  Creation date:  22 Jul 2008 4:21:23 pm
+  Creation date:  22 Jul 2008 10:48:10 pm
 
   Be careful when adding custom code to these files, as only the code within
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
@@ -31,12 +31,35 @@
 //==============================================================================
 bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
     : AudioProcessorEditor (ownerFilter),
+      andBitMod (0),
+      xorBitMod (0),
       bitDisplayInput (0),
       bitDisplayOutput (0),
       processButton (0),
-      bitFormula (0),
+      andRange (0),
+      xorRange (0),
+      clearRange (0),
+      setRange (0),
+      xorToggle (0),
+      andToggle (0),
+      clearToggle (0),
+      setToggle (0),
+      xorSlider (0),
+      andSlider (0),
+      clearSlider (0),
+      setSlider (0),
       internalCachedImage1 (0)
 {
+    addAndMakeVisible (andBitMod = new ToggleButton (T("new toggle button")));
+    andBitMod->setButtonText (T("mod"));
+    andBitMod->addButtonListener (this);
+    andBitMod->setColour (ToggleButton::textColourId, Colours::white);
+
+    addAndMakeVisible (xorBitMod = new ToggleButton (T("new toggle button")));
+    xorBitMod->setButtonText (T("mod"));
+    xorBitMod->addButtonListener (this);
+    xorBitMod->setColour (ToggleButton::textColourId, Colours::white);
+
     addAndMakeVisible (bitDisplayInput = new Label (T("Bit Display"),
                                                     T("0")));
     bitDisplayInput->setFont (Font (Font::getDefaultMonospacedFontName(), 16.0000f, Font::bold));
@@ -67,28 +90,95 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
                               ImageCache::getFromMemory (power_off_png, power_off_pngSize), 0.8428f, Colour (0x0),
                               0, 1.0000f, Colour (0x0),
                               ImageCache::getFromMemory (power_on_png, power_on_pngSize), 1.0000f, Colour (0x0));
-    addAndMakeVisible (bitFormula = new TextEditor (T("Bit Formula")));
-    bitFormula->setTooltip (T("Bit Formula"));
-    bitFormula->setMultiLine (false);
-    bitFormula->setReturnKeyStartsNewLine (false);
-    bitFormula->setReadOnly (false);
-    bitFormula->setScrollbarsShown (false);
-    bitFormula->setCaretVisible (true);
-    bitFormula->setPopupMenuEnabled (true);
-    bitFormula->setColour (TextEditor::textColourId, Colours::white);
-    bitFormula->setColour (TextEditor::backgroundColourId, Colour (0x0));
-    bitFormula->setColour (TextEditor::highlightColourId, Colour (0x5f8effdb));
-    bitFormula->setColour (TextEditor::shadowColourId, Colour (0x0));
-    bitFormula->setColour (TextEditor::caretColourId, Colours::white);
-    bitFormula->setText (String::empty);
+    addAndMakeVisible (andRange = new Label (T("new label"),
+                                             T("1-1")));
+    andRange->setFont (Font (10.0000f, Font::bold));
+    andRange->setJustificationType (Justification::centred);
+    andRange->setEditable (false, false, false);
+    andRange->setColour (Label::textColourId, Colours::white);
+    andRange->setColour (TextEditor::textColourId, Colours::black);
+    andRange->setColour (TextEditor::backgroundColourId, Colour (0x0));
+
+    addAndMakeVisible (xorRange = new Label (T("new label"),
+                                             T("1-1")));
+    xorRange->setFont (Font (10.0000f, Font::bold));
+    xorRange->setJustificationType (Justification::centred);
+    xorRange->setEditable (false, false, false);
+    xorRange->setColour (Label::textColourId, Colours::white);
+    xorRange->setColour (TextEditor::textColourId, Colours::black);
+    xorRange->setColour (TextEditor::backgroundColourId, Colour (0x0));
+
+    addAndMakeVisible (clearRange = new Label (T("new label"),
+                                               T("1-1")));
+    clearRange->setFont (Font (10.0000f, Font::bold));
+    clearRange->setJustificationType (Justification::centred);
+    clearRange->setEditable (false, false, false);
+    clearRange->setColour (Label::textColourId, Colours::white);
+    clearRange->setColour (TextEditor::textColourId, Colours::black);
+    clearRange->setColour (TextEditor::backgroundColourId, Colour (0x0));
+
+    addAndMakeVisible (setRange = new Label (T("new label"),
+                                             T("1-1")));
+    setRange->setFont (Font (10.0000f, Font::bold));
+    setRange->setJustificationType (Justification::centred);
+    setRange->setEditable (false, false, false);
+    setRange->setColour (Label::textColourId, Colours::white);
+    setRange->setColour (TextEditor::textColourId, Colours::black);
+    setRange->setColour (TextEditor::backgroundColourId, Colour (0x0));
+
+    addAndMakeVisible (xorToggle = new ToggleButton (T("new toggle button")));
+    xorToggle->setButtonText (T("XOR"));
+    xorToggle->addButtonListener (this);
+    xorToggle->setColour (ToggleButton::textColourId, Colours::white);
+
+    addAndMakeVisible (andToggle = new ToggleButton (T("new toggle button")));
+    andToggle->setButtonText (T("AND"));
+    andToggle->addButtonListener (this);
+    andToggle->setColour (ToggleButton::textColourId, Colours::white);
+
+    addAndMakeVisible (clearToggle = new ToggleButton (T("new toggle button")));
+    clearToggle->setButtonText (T("CLR"));
+    clearToggle->addButtonListener (this);
+    clearToggle->setColour (ToggleButton::textColourId, Colours::white);
+
+    addAndMakeVisible (setToggle = new ToggleButton (T("new toggle button")));
+    setToggle->setButtonText (T("SET"));
+    setToggle->addButtonListener (this);
+    setToggle->setColour (ToggleButton::textColourId, Colours::white);
+
+    addAndMakeVisible (xorSlider = new Slider (String::empty));
+    xorSlider->setRange (1, 32, 1);
+    xorSlider->setSliderStyle (Slider::TwoValueHorizontal);
+    xorSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    xorSlider->setColour (Slider::trackColourId, Colours::white);
+    xorSlider->addListener (this);
+
+    addAndMakeVisible (andSlider = new Slider (String::empty));
+    andSlider->setRange (1, 32, 1);
+    andSlider->setSliderStyle (Slider::TwoValueHorizontal);
+    andSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    andSlider->setColour (Slider::trackColourId, Colours::white);
+    andSlider->addListener (this);
+
+    addAndMakeVisible (clearSlider = new Slider (String::empty));
+    clearSlider->setRange (1, 32, 1);
+    clearSlider->setSliderStyle (Slider::TwoValueHorizontal);
+    clearSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    clearSlider->setColour (Slider::trackColourId, Colours::white);
+    clearSlider->addListener (this);
+
+    addAndMakeVisible (setSlider = new Slider (String::empty));
+    setSlider->setRange (1, 32, 1);
+    setSlider->setSliderStyle (Slider::TwoValueHorizontal);
+    setSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    setSlider->setColour (Slider::trackColourId, Colours::white);
+    setSlider->addListener (this);
 
     internalCachedImage1 = ImageCache::getFromMemory (metal2_png, metal2_pngSize);
 
     //[UserPreSize]
 	owner = ownerFilter;
 	owner->addChangeListener (this);
-
-	bitFormula->addListener (this);
 
 	MemoryInputStream fontStream (lcd_bin,lcd_binSize, false);
 	Typeface* typeFace = new Typeface (fontStream);
@@ -101,12 +191,6 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
 	lcdSmallFont->setExtraKerningFactor (0.1f);
 	lcdSmallFont->setHeight (12.0f);
 
-	bitFormula->applyFontToAllText (*lcdSmallFont);
-	bitDisplayInput->setFont (*lcdBigFont);
-	bitDisplayOutput->setFont (*lcdBigFont);
-	bitFormula->setColour (TextEditor::focusedOutlineColourId, Colour(0x0));
-	bitFormula->setColour (TextEditor::highlightColourId, Colours::white);
-
 	processButton->setImages (false, true, true,
                               ImageCache::getFromMemory (power_on_png, power_on_pngSize), 0.8428f, Colour (0x0),
                               0, 1.0000f, Colour (0x0),
@@ -116,7 +200,6 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
     setSize (380, 155);
 
     //[Constructor] You can add your own custom stuff here..
-	bitFormula->setText (owner->getLastFormula(), false);
     //[/Constructor]
 }
 
@@ -126,10 +209,23 @@ bitManglerEditor::~bitManglerEditor()
 	owner->removeChangeListener (this);
     //[/Destructor_pre]
 
+    deleteAndZero (andBitMod);
+    deleteAndZero (xorBitMod);
     deleteAndZero (bitDisplayInput);
     deleteAndZero (bitDisplayOutput);
     deleteAndZero (processButton);
-    deleteAndZero (bitFormula);
+    deleteAndZero (andRange);
+    deleteAndZero (xorRange);
+    deleteAndZero (clearRange);
+    deleteAndZero (setRange);
+    deleteAndZero (xorToggle);
+    deleteAndZero (andToggle);
+    deleteAndZero (clearToggle);
+    deleteAndZero (setToggle);
+    deleteAndZero (xorSlider);
+    deleteAndZero (andSlider);
+    deleteAndZero (clearSlider);
+    deleteAndZero (setSlider);
     ImageCache::release (internalCachedImage1);
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -166,12 +262,12 @@ void bitManglerEditor::paint (Graphics& g)
     g.fillRoundedRectangle (8.0f, 108.0f, 360.0f, 40.0f, 10.0000f);
 
     GradientBrush gradient_4 (Colour (0xc2000000),
-                              168.0f, 96.0f,
+                              168.0f, 104.0f,
                               Colour (0x6c515151),
                               168.0f, 64.0f,
                               false);
     g.setBrush (&gradient_4);
-    g.fillRoundedRectangle (13.0f, 66.0f, 315.0f, 30.0f, 10.0000f);
+    g.fillRoundedRectangle (13.0f, 52.0f, 315.0f, 52.0f, 10.0000f);
 
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
@@ -179,10 +275,23 @@ void bitManglerEditor::paint (Graphics& g)
 
 void bitManglerEditor::resized()
 {
+    andBitMod->setBounds (136, 88, 40, 16);
+    xorBitMod->setBounds (136, 64, 40, 16);
     bitDisplayInput->setBounds (8, 8, 360, 40);
     bitDisplayOutput->setBounds (8, 108, 360, 40);
     processButton->setBounds (336, 64, 32, 32);
-    bitFormula->setBounds (16, 64, 312, 32);
+    andRange->setBounds (78, 93, 40, 8);
+    xorRange->setBounds (78, 69, 40, 8);
+    clearRange->setBounds (246, 69, 40, 8);
+    setRange->setBounds (246, 93, 40, 8);
+    xorToggle->setBounds (16, 57, 40, 16);
+    andToggle->setBounds (16, 81, 40, 16);
+    clearToggle->setBounds (170, 57, 38, 16);
+    setToggle->setBounds (170, 81, 38, 16);
+    xorSlider->setBounds (54, 61, 120, 8);
+    andSlider->setBounds (54, 85, 120, 8);
+    clearSlider->setBounds (206, 61, 120, 8);
+    setSlider->setBounds (206, 85, 120, 8);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -192,7 +301,28 @@ void bitManglerEditor::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == processButton)
+    if (buttonThatWasClicked == andBitMod)
+    {
+        //[UserButtonCode_andBitMod] -- add your button handler code here..
+
+		if (andToggle->getToggleState())
+			sliderValueChanged (andSlider);
+		else
+			owner->clearAndTable();
+
+        //[/UserButtonCode_andBitMod]
+    }
+    else if (buttonThatWasClicked == xorBitMod)
+    {
+        //[UserButtonCode_xorBitMod] -- add your button handler code here..
+
+		if (xorToggle->getToggleState())
+			sliderValueChanged (xorSlider);
+		else
+			owner->clearXorTable();
+        //[/UserButtonCode_xorBitMod]
+    }
+    else if (buttonThatWasClicked == processButton)
     {
         //[UserButtonCode_processButton] -- add your button handler code here..
 		if (owner->isProcessing())
@@ -221,9 +351,163 @@ void bitManglerEditor::buttonClicked (Button* buttonThatWasClicked)
 
         //[/UserButtonCode_processButton]
     }
+    else if (buttonThatWasClicked == xorToggle)
+    {
+        //[UserButtonCode_xorToggle] -- add your button handler code here..
+
+		if (xorToggle->getToggleState())
+		{
+			owner->setProcess (XOR, true);
+			sliderValueChanged (xorSlider);
+		}
+		else
+		{
+			owner->setProcess (XOR, false);
+			owner->clearXorTable();
+		}
+
+        //[/UserButtonCode_xorToggle]
+    }
+    else if (buttonThatWasClicked == andToggle)
+    {
+        //[UserButtonCode_andToggle] -- add your button handler code here..
+		
+		if (andToggle->getToggleState())
+		{
+			owner->setProcess (AND, true);
+			sliderValueChanged (andSlider);
+		}
+		else
+		{
+			owner->setProcess (AND, false);
+			owner->clearAndTable();
+		}
+        //[/UserButtonCode_andToggle]
+    }
+    else if (buttonThatWasClicked == clearToggle)
+    {
+        //[UserButtonCode_clearToggle] -- add your button handler code here..
+
+		if (clearToggle->getToggleState())
+		{
+			owner->setProcess (CLEAR, true);
+			sliderValueChanged (clearSlider);
+		}
+		else
+		{
+			owner->setProcess (CLEAR, false);
+			owner->clearClearTable();
+		}
+
+        //[/UserButtonCode_clearToggle]
+    }
+    else if (buttonThatWasClicked == setToggle)
+    {
+        //[UserButtonCode_setToggle] -- add your button handler code here..
+
+		if (setToggle->getToggleState())
+		{
+			owner->setProcess (SET, true);
+			sliderValueChanged (setSlider);
+		}
+		else
+		{
+			owner->setProcess (SET, false);
+			owner->clearSetTable();
+		}
+
+        //[/UserButtonCode_setToggle]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
+}
+
+void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
+{
+    //[UsersliderValueChanged_Pre]
+    //[/UsersliderValueChanged_Pre]
+
+    if (sliderThatWasMoved == xorSlider)
+    {
+        //[UserSliderCode_xorSlider] -- add your slider handling code here..
+		if (!xorToggle->getToggleState())
+			return;
+
+		const int min = (int)xorSlider->getMinValue();
+		const int max = (int)xorSlider->getMaxValue();
+
+		if (min < 1 || max < 1)
+			return;
+
+		for (int x=min; x<=max; x++)
+		{
+			owner->setXorBit (x, xorBitMod->getToggleState());
+		}
+		xorRange->setText (String(min) + T("-") + String(max), false);
+        //[/UserSliderCode_xorSlider]
+    }
+    else if (sliderThatWasMoved == andSlider)
+    {
+        //[UserSliderCode_andSlider] -- add your slider handling code here..
+		if (!andToggle->getToggleState())
+			return;
+
+		const int min = (int)andSlider->getMinValue();
+		const int max = (int)andSlider->getMaxValue();
+
+		if (min < 1 || max < 1)
+			return;
+
+		for (int x=min; x<=max; x++)
+		{
+			owner->setAndBit (x, xorBitMod->getToggleState());
+		}
+		andRange->setText (String(min) + T("-") + String(max), false);
+        //[/UserSliderCode_andSlider]
+    }
+    else if (sliderThatWasMoved == clearSlider)
+    {
+        //[UserSliderCode_clearSlider] -- add your slider handling code here..
+		if (!clearToggle->getToggleState())
+			return;
+
+		const int min = (int)clearSlider->getMinValue();
+		const int max = (int)clearSlider->getMaxValue();
+
+		if (min < 1 || max < 1)
+			return;
+
+		for (int x=min; x<=max; x++)
+		{
+			owner->setClearBit (x);
+		}
+		clearRange->setText (String(min) + T("-") + String(max), false);
+        //[/UserSliderCode_clearSlider]
+    }
+    else if (sliderThatWasMoved == setSlider)
+    {
+        //[UserSliderCode_setSlider] -- add your slider handling code here..
+		if (!setToggle->getToggleState())
+			return;
+		
+		const int min = (int)setSlider->getMinValue();
+		const int max = (int)setSlider->getMaxValue();
+
+		if (min < 1 || max < 1)
+			return;
+		
+		for (int x=min; x<=max; x++)
+		{
+			owner->setSetBit (x);
+		}
+
+		setRange->setText (String(min) + T("-") + String(max), false);
+        //[/UserSliderCode_setSlider]
+    }
+
+    //[UsersliderValueChanged_Post]
+    //[/UsersliderValueChanged_Post]
 }
 
 
@@ -253,8 +537,6 @@ void bitManglerEditor::updateBitDisplay()
 	const float currentConvertedSample = owner->getCurrentConvertedSample();
 	owner->getCallbackLock().exit();
 
-	Logger::writeToLog (String::formatted (T("s:%.8f ps:%.8f"), currentSample, currentConvertedSample));
-	
 	uSample.f = currentSample;
 	uConvertedSample.f = currentConvertedSample;
 
@@ -299,38 +581,6 @@ void bitManglerEditor::updateBitDisplay()
 	bitDisplayOutput->setText (out, false);
 }
 
-void bitManglerEditor::textEditorTextChanged (TextEditor &editor)
-{
-}
-
-void bitManglerEditor::textEditorReturnKeyPressed (TextEditor &editor)
-{
-	if (&editor == bitFormula)
-	{
-		if (owner->parseFormula (bitFormula->getText()))
-		{
-			processButton->setImages (false, true, true,
-                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 0.8428f, Colour (0x0),
-                              0, 1.0000f, Colour (0x0),
-                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 1.0000f, Colour (0x0));
-		}
-		else
-		{
-			processButton->setImages (false, true, true,
-                              ImageCache::getFromMemory (power_off_png, power_off_pngSize), 0.8428f, Colour (0x0),
-                              0, 1.0000f, Colour (0x0),
-                              ImageCache::getFromMemory (power_on_png, power_on_pngSize), 1.0000f, Colour (0x0));
-		}
-	}
-}
-
-void bitManglerEditor::textEditorEscapeKeyPressed (TextEditor &editor)
-{
-}
-
-void bitManglerEditor::textEditorFocusLost (TextEditor &editor)
-{
-}
 //[/MiscUserCode]
 
 
@@ -343,7 +593,7 @@ void bitManglerEditor::textEditorFocusLost (TextEditor &editor)
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="bitManglerEditor" componentName=""
-                 parentClasses="public AudioProcessorEditor, public ChangeListener, public TextEditorListener"
+                 parentClasses="public AudioProcessorEditor, public ChangeListener"
                  constructorParams="DemoJuceFilter* const ownerFilter" variableInitialisers="AudioProcessorEditor (ownerFilter)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330000013"
                  fixedSize="1" initialWidth="380" initialHeight="155">
@@ -353,9 +603,17 @@ BEGIN_JUCER_METADATA
                hasStroke="0"/>
     <ROUNDRECT pos="8 108 360 40" cornerSize="10" fill="linear: 176 144, 176 104, 0=c2000000, 1=6c515151"
                hasStroke="0"/>
-    <ROUNDRECT pos="13 66 315 30" cornerSize="10" fill="linear: 168 96, 168 64, 0=c2000000, 1=6c515151"
+    <ROUNDRECT pos="13 52 315 52" cornerSize="10" fill="linear: 168 104, 168 64, 0=c2000000, 1=6c515151"
                hasStroke="0"/>
   </BACKGROUND>
+  <TOGGLEBUTTON name="new toggle button" id="89a7c7b04d87537a" memberName="andBitMod"
+                virtualName="" explicitFocusOrder="0" pos="136 88 40 16" txtcol="ffffffff"
+                buttonText="mod" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
+  <TOGGLEBUTTON name="new toggle button" id="ab48f9e596989182" memberName="xorBitMod"
+                virtualName="" explicitFocusOrder="0" pos="136 64 40 16" txtcol="ffffffff"
+                buttonText="mod" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
   <LABEL name="Bit Display" id="ba73773ed927989c" memberName="bitDisplayInput"
          virtualName="" explicitFocusOrder="0" pos="8 8 360 40" bkgCol="ffffff"
          textCol="ff2eff3a" outlineCol="0" edTextCol="ff000000" edBkgCol="0"
@@ -374,11 +632,58 @@ BEGIN_JUCER_METADATA
                resourceNormal="power_off_png" opacityNormal="0.842767298" colourNormal="0"
                resourceOver="" opacityOver="1" colourOver="0" resourceDown="power_on_png"
                opacityDown="1" colourDown="0"/>
-  <TEXTEDITOR name="Bit Formula" id="d4dcdcbfff58821c" memberName="bitFormula"
-              virtualName="" explicitFocusOrder="0" pos="16 64 312 32" tooltip="Bit Formula"
-              textcol="ffffffff" bkgcol="0" hilitecol="5f8effdb" shadowcol="0"
-              caretcol="ffffffff" initialText="" multiline="0" retKeyStartsLine="0"
-              readonly="0" scrollbars="0" caret="1" popupmenu="1"/>
+  <LABEL name="new label" id="9d0c737ceadc665c" memberName="andRange"
+         virtualName="" explicitFocusOrder="0" pos="78 93 40 8" textCol="ffffffff"
+         edTextCol="ff000000" edBkgCol="0" labelText="1-1" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="10" bold="1" italic="0" justification="36"/>
+  <LABEL name="new label" id="38b7dddb6e3de352" memberName="xorRange"
+         virtualName="" explicitFocusOrder="0" pos="78 69 40 8" textCol="ffffffff"
+         edTextCol="ff000000" edBkgCol="0" labelText="1-1" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="10" bold="1" italic="0" justification="36"/>
+  <LABEL name="new label" id="df82b0e597fb4365" memberName="clearRange"
+         virtualName="" explicitFocusOrder="0" pos="246 69 40 8" textCol="ffffffff"
+         edTextCol="ff000000" edBkgCol="0" labelText="1-1" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="10" bold="1" italic="0" justification="36"/>
+  <LABEL name="new label" id="d4ebe68b130d3b4" memberName="setRange" virtualName=""
+         explicitFocusOrder="0" pos="246 93 40 8" textCol="ffffffff" edTextCol="ff000000"
+         edBkgCol="0" labelText="1-1" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="10"
+         bold="1" italic="0" justification="36"/>
+  <TOGGLEBUTTON name="new toggle button" id="bb2ce646eb272d0" memberName="xorToggle"
+                virtualName="" explicitFocusOrder="0" pos="16 57 40 16" txtcol="ffffffff"
+                buttonText="XOR" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
+  <TOGGLEBUTTON name="new toggle button" id="16ec5992aca7d239" memberName="andToggle"
+                virtualName="" explicitFocusOrder="0" pos="16 81 40 16" txtcol="ffffffff"
+                buttonText="AND" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
+  <TOGGLEBUTTON name="new toggle button" id="f2214d5d187f7022" memberName="clearToggle"
+                virtualName="" explicitFocusOrder="0" pos="170 57 38 16" txtcol="ffffffff"
+                buttonText="CLR" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
+  <TOGGLEBUTTON name="new toggle button" id="74eaf471efda6195" memberName="setToggle"
+                virtualName="" explicitFocusOrder="0" pos="170 81 38 16" txtcol="ffffffff"
+                buttonText="SET" connectedEdges="0" needsCallback="1" radioGroupId="0"
+                state="0"/>
+  <SLIDER name="" id="d74bb98668a6df2a" memberName="xorSlider" virtualName=""
+          explicitFocusOrder="0" pos="54 61 120 8" trackcol="ffffffff"
+          min="1" max="32" int="1" style="TwoValueHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+  <SLIDER name="" id="bd43c636a56cb753" memberName="andSlider" virtualName=""
+          explicitFocusOrder="0" pos="54 85 120 8" trackcol="ffffffff"
+          min="1" max="32" int="1" style="TwoValueHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+  <SLIDER name="" id="14afddd09d7c6a30" memberName="clearSlider" virtualName=""
+          explicitFocusOrder="0" pos="206 61 120 8" trackcol="ffffffff"
+          min="1" max="32" int="1" style="TwoValueHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
+  <SLIDER name="" id="6b5699ba41f0741f" memberName="setSlider" virtualName=""
+          explicitFocusOrder="0" pos="206 85 120 8" trackcol="ffffffff"
+          min="1" max="32" int="1" style="TwoValueHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

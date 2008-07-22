@@ -108,18 +108,20 @@ public:
 	float getCurrentSample();
 	float getCurrentConvertedSample();
 	void stopProcessing();
-	void startProcessing(bool p=true);
+	void startProcessing();
 	bool isProcessing();
 	float process(float sample);
 
 	void setXorBit (int pos, bool bit);
+	void setAndBit (int pos, bool bit);
 	void setSetBit (int pos);
 	void setClearBit (int pos);
 	void clearTable();
-	bool parseFormula (String s);
-	bool parseFunction (String f);
-	String getLastFormula();
-
+	void clearXorTable();
+	void clearAndTable();
+	void clearSetTable();
+	void clearClearTable();
+	void setProcess (int processDef, bool b);
 private:
     // this is our gain - the UI and the host can access this by getting/setting
     // parameter 0.
@@ -128,7 +130,7 @@ private:
 	float currentConvertedSample;
 	unsigned int bufferCycle;
 	bool processing;
-
+	bool xorProcessing, andProcessing, clearProcessing, setProcessing;
 	Array <bool>xorBits;
 	Array <bool>xorWith;
 
@@ -140,8 +142,6 @@ private:
 
 	Array <bool>clearBits;
 	Array <bool>setBits;
-
-	String lastFormula;
 };
 
 
