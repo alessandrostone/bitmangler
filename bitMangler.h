@@ -31,6 +31,8 @@
 
 #ifndef DEMOJUCEPLUGINFILTER_H
 #define DEMOJUCEPLUGINFILTER_H
+#include "bitManglerFloat.h"
+
 class bitManglerEditor;
 
 //==============================================================================
@@ -39,6 +41,7 @@ class bitManglerEditor;
     passing through it.
 
 */
+
 class DemoJuceFilter  : public AudioProcessor,
                         public ChangeBroadcaster
 {
@@ -107,6 +110,15 @@ public:
 	void stopProcessing();
 	void startProcessing();
 	bool isProcessing();
+	float process(float sample);
+
+	void setXorBit (int pos, bool bit);
+	void setSetBit (int pos);
+	void setClearBit (int pos);
+	void clearTable();
+	void parseFormula (String s);
+	void parseFunction (String f);
+	String getLastFormula();
 
 private:
     // this is our gain - the UI and the host can access this by getting/setting
@@ -116,6 +128,20 @@ private:
 	float currentConvertedSample;
 	unsigned int bufferCycle;
 	bool processing;
+
+	Array <bool>xorBits;
+	Array <bool>xorWith;
+
+	Array <bool>andBits;
+	Array <bool>andWith;
+
+	Array <bool>orBits;
+	Array <bool>orWith;
+
+	Array <bool>clearBits;
+	Array <bool>setBits;
+
+	String lastFormula;
 };
 
 

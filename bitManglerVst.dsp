@@ -98,6 +98,10 @@ SOURCE=.\bitMangler.cpp
 
 SOURCE=.\bitManglerEditor.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\bitManglerFloat.cpp
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -113,6 +117,10 @@ SOURCE=.\bitManglerCharacteristics.h
 # Begin Source File
 
 SOURCE=.\bitManglerEditor.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\bitManglerFloat.h
 # End Source File
 # End Group
 # Begin Group "wrapper"
