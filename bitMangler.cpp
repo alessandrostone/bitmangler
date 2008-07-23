@@ -32,7 +32,7 @@ const String DemoJuceFilter::getName() const
 
 int DemoJuceFilter::getNumParameters()
 {
-    return 1;
+    return (kParams);
 }
 
 float DemoJuceFilter::getParameter (int index)
@@ -42,16 +42,119 @@ float DemoJuceFilter::getParameter (int index)
 
 void DemoJuceFilter::setParameter (int index, float newValue)
 {
+    switch (index)
+	{
+		case kXorToggle:
+			xorProcessing = (bool)newValue;
+			break;
+
+		case kAndToggle:
+			andProcessing = (bool)newValue;
+			break;
+
+		case kClearToggle:
+			clearProcessing = (bool)newValue;
+			break;
+
+		case kSetToggle:
+			setProcessing = (bool)newValue;
+			break;
+
+		case kXorMod:
+			xorWith = (bool)newValue;
+			break;
+
+		case kAndMod:
+			andWith = (bool)newValue;
+			break;
+
+		default:
+			break;
+	}
 }
 
 const String DemoJuceFilter::getParameterName (int index)
 {
-    return String::empty;
+	Logger::writeToLog (T("getParameterName(): ") + String(index));
+
+    switch (index)
+	{
+		case kXorToggle:
+			return (T("XOR Process"));
+		case kAndToggle:
+			return (T("AND Process"));
+		case kClearToggle:
+			return (T("CLEAR Process"));			
+		case kSetToggle:
+			return (T("SET Process"));
+		case kXorMod:
+			return (T("XOR Modulator"));
+		case kAndMod:
+			return (T("AND Modulator"));
+		case kXorMin:
+			return (T("XOR Range Start"));
+		case kXorMax:
+			return (T("XOR Range End"));
+		case kAndMin:
+			return (T("AND Range Start"));
+		case kAndMax:
+			return (T("AND Range End"));
+		case kClearMin:
+			return (T("CLEAR Range Start"));
+		case kClearMax:
+			return (T("CLEAR Range End"));
+		case kSetMin:
+			return (T("SET Range Start"));
+		case kSetMax:
+			return (T("SET Range End"));
+		case kProces:
+			return (T("Process"));
+		default:
+			break;
+	}
+
+	return (T("process"));
 }
 
 const String DemoJuceFilter::getParameterText (int index)
 {
-    return String::empty;
+    switch (index)
+	{
+		case kXorToggle:
+			return (String(xorProcessing));
+		case kAndToggle:
+			return (String(andProcessing));
+		case kClearToggle:
+			return (String(clearProcessing));
+		case kSetToggle:
+			return (String(setProcessing));
+		case kXorMod:
+			return (String(xorWith));
+		case kAndMod:
+			return (String(andWith));
+		case kXorMin:
+			return (String(getXorFirst()));
+		case kXorMax:
+			return (String(getXorLast()));
+		case kAndMin:
+			return (String(getAndFirst()));
+		case kAndMax:
+			return (String(getAndLast()));
+		case kClearMin:
+			return (String(getClearFirst()));
+		case kClearMax:
+			return (String(getClearLast()));
+		case kSetMin:
+			return (String(getSetFirst()));
+		case kSetMax:
+			return (String(getSetLast()));
+		case kProces:
+			return (String(processing));
+		default:
+			break;
+	}
+
+	return (String::empty);
 }
 
 const String DemoJuceFilter::getInputChannelName (const int channelIndex) const
@@ -76,21 +179,21 @@ bool DemoJuceFilter::isOutputChannelStereoPair (int index) const
 
 bool DemoJuceFilter::acceptsMidi() const
 {
-    return true;
+    return false;
 }
 
 bool DemoJuceFilter::producesMidi() const
 {
-    return true;
+    return false;
 }
 
 void DemoJuceFilter::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    keyboardState.reset();
 }
 
 void DemoJuceFilter::releaseResources()
 {
+	clearTable();
 }
 
 void DemoJuceFilter::processBlock (AudioSampleBuffer& buffer,
@@ -368,7 +471,7 @@ void DemoJuceFilter::unserializeArray (String data, Array <bool>&a)
 	}
 }
 
-int DemoJuceFilter::getXorFirstBit()
+int DemoJuceFilter::getXorFirst()
 {
 	for (int x=0; x<32; x++)
 	{
