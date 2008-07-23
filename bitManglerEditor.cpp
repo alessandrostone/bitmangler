@@ -444,7 +444,11 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 		const int min = (int)xorSlider->getMinValue();
 		const int max = (int)xorSlider->getMaxValue();
 
+		Logger::writeToLog (T("xorSlider: ") + String(min) + T("-") + String(max));
 		if (min < 1 || max > 32)
+			return;
+
+		if (min > max)
 			return;
 
 		owner->clearXorTable();
@@ -453,6 +457,11 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 		{
 			owner->setXorBit (x, xorBitMod->getToggleState());
 		}
+
+		Logger::writeToLog (T("setParameterNotifyingHost()") + String (32/(float)min) + T("-") + String (32/(float)max));
+		owner->setParameterNotifyingHost(DemoJuceFilter::kXorMin, (float)min/32);
+		owner->setParameterNotifyingHost(DemoJuceFilter::kXorMax, (float)max/32);
+
 		xorRange->setText (String(min) + T("-") + String(max), false);
         //[/UserSliderCode_xorSlider]
     }
@@ -467,13 +476,19 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 
 		if (min < 1 || max > 32)
 			return;
+		
+		if (min > max)
+			return;
 
 		owner->clearAndTable();
-
+	
 		for (int x=min; x<=max; x++)
 		{
 			owner->setAndBit (x, xorBitMod->getToggleState());
 		}
+
+		owner->setParameterNotifyingHost(DemoJuceFilter::kAndMin, (float)min/32);
+		owner->setParameterNotifyingHost(DemoJuceFilter::kAndMax, (float)max/32);
 		andRange->setText (String(min) + T("-") + String(max), false);
         //[/UserSliderCode_andSlider]
     }
@@ -488,13 +503,19 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 
 		if (min < 1 || max > 32)
 			return;
-
+		
+		if (min > max)
+			return;
+		
 		owner->clearClearTable();
-
+		
 		for (int x=min; x<=max; x++)
 		{
 			owner->setClearBit (x);
 		}
+
+		owner->setParameterNotifyingHost(DemoJuceFilter::kClearMin, (float)min/32);
+		owner->setParameterNotifyingHost(DemoJuceFilter::kClearMax, (float)max/32);
 		clearRange->setText (String(min) + T("-") + String(max), false);
         //[/UserSliderCode_clearSlider]
     }
@@ -509,7 +530,10 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 
 		if (min < 1 || max > 32)
 			return;
-		
+
+		if (min > max)
+			return;
+
 		owner->clearSetTable();
 
 		for (int x=min; x<=max; x++)
@@ -517,6 +541,8 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 			owner->setSetBit (x);
 		}
 
+		owner->setParameterNotifyingHost(DemoJuceFilter::kSetMin, (float)min/32);
+		owner->setParameterNotifyingHost(DemoJuceFilter::kSetMax, (float)max/32);
 		setRange->setText (String(min) + T("-") + String(max), false);
         //[/UserSliderCode_setSlider]
     }
@@ -541,7 +567,14 @@ String bitManglerEditor::getBinaryString (floatint b, int d)
 
 void bitManglerEditor::changeListenerCallback(void *ptr)
 {
-	updateBitDisplay();
+	if (ptr == owner)
+	{
+		setProgram();
+	}
+	if (ptr == 0)
+	{
+		updateBitDisplay();
+	}
 }
 
 void bitManglerEditor::setProgram()
@@ -594,10 +627,12 @@ void bitManglerEditor::setProgram()
 	else
 		clearToggle->setToggleState (false, false);
 
-
-	xorSlider->setMaxValue (xorLast, false);
-	xorSlider->setMinValue (xorFirst, false);
-	xorRange->setText (String(xorFirst) + T("-") + String(xorLast), false);
+	if (xorLast != xorSlider->getMaxValue() || xorFirst != xorSlider->getMinValue())
+	{
+		xorSlider->setMaxValue (xorLast, false);
+		xorSlider->setMinValue (xorFirst, false);
+		xorRange->setText (String(xorFirst) + T("-") + String(xorLast), false);
+	}
 
 	andSlider->setMaxValue (andLast, false);
 	andSlider->setMinValue (andFirst, false);
