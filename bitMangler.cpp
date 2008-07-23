@@ -37,11 +37,46 @@ int DemoJuceFilter::getNumParameters()
 
 float DemoJuceFilter::getParameter (int index)
 {
+	Logger::writeToLog (T("getParameter(): ") + String(index));
+
+	switch (index)
+	{
+		case kXorToggle:
+			return (float)xorProcessing;
+		case kAndToggle:
+			return (float)andProcessing;
+		case kClearToggle:
+			return (float)clearProcessing;
+		case kSetToggle:
+			return (float)setProcessing;
+		case kXorMin:
+			return (float)getXorFirst()/32;
+		case kXorMax:
+			return (float)getXorLast()/32;
+		case kAndMin:
+			return (float)getAndFirst()/32;
+		case kAndMax:
+			return (float)getAndLast()/32;
+		case kClearMin:
+			return (float)getClearFirst()/32;
+		case kClearMax:
+			return (float)getClearLast()/32;
+		case kSetMin:
+			return (float)getSetFirst()/32;
+		case kSetMax:
+			return (float)getSetLast()/32;
+
+		default:
+			return (0.0);
+	}
+
 	return (0.0);
 }
 
 void DemoJuceFilter::setParameter (int index, float newValue)
 {
+	Logger::writeToLog (T("setParameter(): ") + String(index) + T(" value: ") + String(newValue*32));
+
     switch (index)
 	{
 		case kXorToggle:
@@ -66,6 +101,22 @@ void DemoJuceFilter::setParameter (int index, float newValue)
 
 		case kAndMod:
 			andWith = (bool)newValue;
+			break;
+
+		case kXorMin:
+			setRange (newValue*32, getXorLast(), bitManglerEditor::XOR);
+			break;
+
+		case kXorMax:
+			setRange (getXorFirst(), newValue*32, bitManglerEditor::XOR);
+			break;
+
+		case kAndMin:
+			setRange (newValue*32, getAndLast(), bitManglerEditor::AND);
+			break;
+
+		case kAndMax:
+			setRange (getAndFirst(), newValue*32, bitManglerEditor::AND);
 			break;
 
 		default:
@@ -577,4 +628,144 @@ void DemoJuceFilter::setXorWith(bool b)
 void DemoJuceFilter::setAndWith(bool b)
 {
 	andWith = b;
+}
+
+void DemoJuceFilter::setRange(int min, int max, int t)
+{
+	if (min <= 0 || max <= 0)
+		return;
+
+	if (min > max)
+		return;
+
+	if (max == 0 && min == 0)
+		return;
+
+	int x=0;
+
+	if (max == 0 && min >= 1)
+	{
+		/* set only min */
+		switch (t)
+		{
+			case bitManglerEditor::XOR:
+				max = getXorLast();
+				for (x=min; x<=max; x++)
+				{
+					setXorBit (x, xorWith);
+				}
+				break;
+
+			case bitManglerEditor::AND:
+				max = getAndLast();
+				for (x=min; x<=max; x++)
+				{
+					setAndBit (x, xorWith);
+				}
+				break;
+
+			case bitManglerEditor::CLEAR:
+				max = getClearLast();
+				for (x=min; x<=max; x++)
+				{
+					setClearBit (x);
+				}
+				break;
+
+			case bitManglerEditor::SET:
+				max = getSetLast();
+				for (x=min; x<=max; x++)
+				{
+					setSetBit (x);
+				}
+				break;
+			default:
+				break;
+		}
+	}
+	else if (min == 0 && max <= 32)
+	{
+		/* set only max */
+		switch (t)
+		{
+			case bitManglerEditor::XOR:
+				min = getXorFirst();
+				for (x=min; x<=max; x++)
+				{
+					setXorBit (x, xorWith);
+				}
+				break;
+
+			case bitManglerEditor::AND:
+				min = getAndFirst();
+				for (x=min; x<=max; x++)
+				{
+					setAndBit (x, xorWith);
+				}
+				break;
+
+			case bitManglerEditor::CLEAR:
+				min = getClearFirst();
+				for (x=min; x<=max; x++)
+				{
+					setClearBit (x);
+				}
+				break;
+
+			case bitManglerEditor::SET:
+				min = getSetFirst();
+				for (x=min; x<=max; x++)
+				{
+					setSetBit (x);
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+	else if (min >= 1 && max <= 32)
+	{
+		/* set both */
+		switch (t)
+		{
+			case bitManglerEditor::XOR:
+				min = getXorFirst();
+				max = getXorLast();
+				for (x=min; x<=max; x++)
+				{
+					setXorBit (x, xorWith);
+				}
+				break;
+
+			case bitManglerEditor::AND:
+				min = getAndFirst();
+				max = getAndLast();
+				for (x=min; x<=max; x++)
+				{
+					setAndBit (x, xorWith);
+				}
+				break;
+
+			case bitManglerEditor::CLEAR:
+				min = getClearFirst();
+				max = getClearLast();
+				for (x=min; x<=max; x++)
+				{
+					setClearBit (x);
+				}
+				break;
+
+			case bitManglerEditor::SET:
+				min = getSetFirst();
+				max = getSetLast();
+				for (x=min; x<=max; x++)
+				{
+					setSetBit (x);
+				}
+				break;
+			default:
+				break;
+		}
+	}
 }
