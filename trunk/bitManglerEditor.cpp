@@ -177,6 +177,16 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
     internalCachedImage1 = ImageCache::getFromMemory (metal2_png, metal2_pngSize);
 
     //[UserPreSize]
+	xorSlider->setMinValue (1, false);
+	andSlider->setMinValue (1, false);
+	clearSlider->setMinValue (1, false);
+	setSlider->setMinValue (1, false);
+
+	xorSlider->setMaxValue (1, false);
+	andSlider->setMaxValue (1, false);
+	clearSlider->setMaxValue (1, false);
+	setSlider->setMaxValue (1, false);
+
 	owner = ownerFilter;
 	owner->addChangeListener (this);
 
@@ -200,6 +210,7 @@ bitManglerEditor::bitManglerEditor (DemoJuceFilter* const ownerFilter)
     setSize (380, 155);
 
     //[Constructor] You can add your own custom stuff here..
+	setProgram();
     //[/Constructor]
 }
 
@@ -304,22 +315,17 @@ void bitManglerEditor::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == andBitMod)
     {
         //[UserButtonCode_andBitMod] -- add your button handler code here..
-
-		if (andToggle->getToggleState())
-			sliderValueChanged (andSlider);
-		else
-			owner->clearAndTable();
-
+		owner->getCallbackLock().enter();
+		owner->setAndWith (andBitMod->getToggleState());
+		owner->getCallbackLock().exit();
         //[/UserButtonCode_andBitMod]
     }
     else if (buttonThatWasClicked == xorBitMod)
     {
         //[UserButtonCode_xorBitMod] -- add your button handler code here..
-
-		if (xorToggle->getToggleState())
-			sliderValueChanged (xorSlider);
-		else
-			owner->clearXorTable();
+		owner->getCallbackLock().enter();
+		owner->setXorWith (xorBitMod->getToggleState());
+		owner->getCallbackLock().exit();
         //[/UserButtonCode_xorBitMod]
     }
     else if (buttonThatWasClicked == processButton)
@@ -437,8 +443,10 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 		const int min = (int)xorSlider->getMinValue();
 		const int max = (int)xorSlider->getMaxValue();
 
-		if (min < 1 || max < 1)
+		if (min < 1 || max > 32)
 			return;
+
+		owner->clearXorTable();
 
 		for (int x=min; x<=max; x++)
 		{
@@ -456,8 +464,10 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 		const int min = (int)andSlider->getMinValue();
 		const int max = (int)andSlider->getMaxValue();
 
-		if (min < 1 || max < 1)
+		if (min < 1 || max > 32)
 			return;
+
+		owner->clearAndTable();
 
 		for (int x=min; x<=max; x++)
 		{
@@ -475,8 +485,10 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 		const int min = (int)clearSlider->getMinValue();
 		const int max = (int)clearSlider->getMaxValue();
 
-		if (min < 1 || max < 1)
+		if (min < 1 || max > 32)
 			return;
+
+		owner->clearClearTable();
 
 		for (int x=min; x<=max; x++)
 		{
@@ -494,9 +506,11 @@ void bitManglerEditor::sliderValueChanged (Slider* sliderThatWasMoved)
 		const int min = (int)setSlider->getMinValue();
 		const int max = (int)setSlider->getMaxValue();
 
-		if (min < 1 || max < 1)
+		if (min < 1 || max > 32)
 			return;
 		
+		owner->clearSetTable();
+
 		for (int x=min; x<=max; x++)
 		{
 			owner->setSetBit (x);
@@ -529,10 +543,77 @@ void bitManglerEditor::changeListenerCallback(void *ptr)
 	updateBitDisplay();
 }
 
+void bitManglerEditor::setProgram()
+{
+	owner->getCallbackLock().enter();
+	const bool xorProcessing = owner->xorProcessing;
+	const bool andProcessing = owner->andProcessing;
+	const bool clearProcessing = owner->clearProcessing;
+	const bool setProcessing = owner->setProcessing;
+	const bool xorWith = owner->getXorWith();
+	const bool andWith = owner->getAndWith();
+
+	const int xorFirst = owner->getXorFirstBit();
+	const int xorLast = owner->getXorLast();
+	const int andFirst = owner->getAndFirst();
+	const int andLast = owner->getAndLast();
+	const int clearFirst = owner->getClearFirst();
+	const int clearLast = owner->getClearLast();
+	const int setFirst = owner->getSetFirst();
+	const int setLast = owner->getSetLast();
+	owner->getCallbackLock().exit();
+
+	if (xorWith)
+		xorBitMod->setToggleState (true, false);
+	else
+		xorBitMod->setToggleState (false, false);
+
+	if (andWith)
+		andBitMod->setToggleState (true, false);
+	else
+		andBitMod->setToggleState (false, false);
+
+	if (xorProcessing)
+		xorToggle->setToggleState (true, false);
+	else
+		xorToggle->setToggleState (false, false);
+
+	if (andProcessing)
+		andToggle->setToggleState (true, false);
+	else
+		andToggle->setToggleState (false, false);
+
+	if (setProcessing)
+		setToggle->setToggleState (true, false);
+	else
+		setToggle->setToggleState (false, false);
+
+	if (clearProcessing)
+		clearToggle->setToggleState (true, false);
+	else
+		clearToggle->setToggleState (false, false);
+
+
+	xorSlider->setMaxValue (xorLast, false);
+	xorSlider->setMinValue (xorFirst, false);
+	xorRange->setText (String(xorFirst) + T("-") + String(xorLast), false);
+
+	andSlider->setMaxValue (andLast, false);
+	andSlider->setMinValue (andFirst, false);
+	andRange->setText (String(andFirst) + T("-") + String(andLast), false);
+
+	clearSlider->setMaxValue (clearLast, false);
+	clearSlider->setMinValue (clearFirst, false);
+	clearRange->setText (String(clearFirst) + T("-") + String(clearLast), false);
+	
+	setSlider->setMaxValue (setLast, false, true);
+	setSlider->setMinValue (setFirst, false, true);
+	setRange->setText (String(setFirst) + T("-") + String(setLast), false);
+}
+
 void bitManglerEditor::updateBitDisplay()
 {
 	owner->getCallbackLock().enter();
-
 	const float currentSample = owner->getCurrentSample();
 	const float currentConvertedSample = owner->getCurrentConvertedSample();
 	owner->getCallbackLock().exit();
