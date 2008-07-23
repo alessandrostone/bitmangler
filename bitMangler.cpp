@@ -405,13 +405,11 @@ void DemoJuceFilter::setStateInformation (const void* data, int sizeInBytes)
 
 			unserializeArray (xmlState->getStringAttribute (T("setBits")), setBits);
 			unserializeArray (xmlState->getStringAttribute (T("clearBits")), clearBits);
-
-            if (editor)
-				editor->setProgram();
         }
-
         delete xmlState;
     }
+
+	sendChangeMessage (this);
 }
 
 float DemoJuceFilter::getCurrentSample()
@@ -615,11 +613,24 @@ void DemoJuceFilter::unserializeArray (String data, Array <bool>&a)
 		
 		a.set (x, b);
 	}
+
+	for (x=0; x<32; x++)
+	{
+		const int k = (int)a[x];
+		Logger::writeToLog (String::formatted (T("unserialize: %d"), k));
+	}
 }
 
 int DemoJuceFilter::getXorFirst()
 {
-	for (int x=0; x<32; x++)
+	int x;
+	for (x=0; x<32; x++)
+	{
+		const int k = (int)xorBits[x];
+		Logger::writeToLog (String::formatted (T("getXorFirst: %d"), k));
+	}
+
+	for (x=0; x<32; x++)
 	{
 		if (xorBits[x])
 			return (x+1);

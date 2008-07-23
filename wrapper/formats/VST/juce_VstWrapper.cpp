@@ -751,7 +751,7 @@ public:
             rate = 44100.0;
 
         const int blockSize = getBlockSize();
-        jassert (blockSize > 0);
+//        jassert (blockSize > 0);
 
         firstProcessCallback = true;
 

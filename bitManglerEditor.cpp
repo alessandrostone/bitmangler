@@ -588,6 +588,7 @@ void bitManglerEditor::setProgram()
 	const bool andWith = owner->getAndWith();
 
 	const int xorFirst = owner->getXorFirst();
+	
 	const int xorLast = owner->getXorLast();
 	const int andFirst = owner->getAndFirst();
 	const int andLast = owner->getAndLast();
@@ -627,12 +628,9 @@ void bitManglerEditor::setProgram()
 	else
 		clearToggle->setToggleState (false, false);
 
-	if (xorLast != xorSlider->getMaxValue() || xorFirst != xorSlider->getMinValue())
-	{
-		xorSlider->setMaxValue (xorLast, false);
-		xorSlider->setMinValue (xorFirst, false);
-		xorRange->setText (String(xorFirst) + T("-") + String(xorLast), false);
-	}
+	xorSlider->setMaxValue (xorLast, false);
+	xorSlider->setMinValue (xorFirst, false);
+	xorRange->setText (String(xorFirst) + T("-") + String(xorLast), false);
 
 	andSlider->setMaxValue (andLast, false);
 	andSlider->setMinValue (andFirst, false);
