@@ -240,6 +240,7 @@ bitManglerEditor::~bitManglerEditor()
     ImageCache::release (internalCachedImage1);
 
     //[Destructor]. You can add your own custom destruction code here..
+	owner->removeChangeListener (this);
     //[/Destructor]
 }
 
