@@ -124,7 +124,7 @@ public:
 	void setProcess (int processDef, bool b);
 	String serializeArray (Array <bool>a);
 	void unserializeArray (String data, Array <bool>&a);
-	int getXorFirstBit();
+	int getXorFirst();
 	int getXorLast();
 	int getAndFirst();
 	int getAndLast();
@@ -137,6 +137,27 @@ public:
 	void setXorWith(bool b);
 	void setAndWith(bool b);
 	bool xorProcessing, andProcessing, clearProcessing, setProcessing;
+	
+	enum params
+	{
+		kXorToggle,
+		kAndToggle,
+		kClearToggle,
+		kSetToggle,
+		kXorMod,
+		kAndMod,
+		kXorMin,
+		kXorMax,
+		kAndMin,
+		kAndMax,
+		kClearMin,
+		kClearMax,
+		kSetMin,
+		kSetMax,
+		kProces,
+		kParams
+	};
+
 private:
     // this is our gain - the UI and the host can access this by getting/setting
     // parameter 0.

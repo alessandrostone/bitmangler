@@ -553,7 +553,7 @@ void bitManglerEditor::setProgram()
 	const bool xorWith = owner->getXorWith();
 	const bool andWith = owner->getAndWith();
 
-	const int xorFirst = owner->getXorFirstBit();
+	const int xorFirst = owner->getXorFirst();
 	const int xorLast = owner->getXorLast();
 	const int andFirst = owner->getAndFirst();
 	const int andLast = owner->getAndLast();
