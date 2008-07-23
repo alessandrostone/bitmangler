@@ -61,8 +61,9 @@ public:
 	void textEditorReturnKeyPressed (TextEditor &editor);
 	void textEditorEscapeKeyPressed (TextEditor &editor);
 	void textEditorFocusLost (TextEditor &editor);
+	void setProgram();
 
-		enum operations
+	enum operations
 	{
 		XOR,
 		AND,

@@ -122,6 +122,21 @@ public:
 	void clearSetTable();
 	void clearClearTable();
 	void setProcess (int processDef, bool b);
+	String serializeArray (Array <bool>a);
+	void unserializeArray (String data, Array <bool>&a);
+	int getXorFirstBit();
+	int getXorLast();
+	int getAndFirst();
+	int getAndLast();
+	int getClearFirst();
+	int getClearLast();
+	int getSetFirst();
+	int getSetLast();
+	bool getXorWith();
+	bool getAndWith();
+	void setXorWith(bool b);
+	void setAndWith(bool b);
+	bool xorProcessing, andProcessing, clearProcessing, setProcessing;
 private:
     // this is our gain - the UI and the host can access this by getting/setting
     // parameter 0.
@@ -130,12 +145,12 @@ private:
 	float currentConvertedSample;
 	unsigned int bufferCycle;
 	bool processing;
-	bool xorProcessing, andProcessing, clearProcessing, setProcessing;
+
 	Array <bool>xorBits;
-	Array <bool>xorWith;
+	bool xorWith;
 
 	Array <bool>andBits;
-	Array <bool>andWith;
+	bool andWith;
 
 	Array <bool>orBits;
 	Array <bool>orWith;

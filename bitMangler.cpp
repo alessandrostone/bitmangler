@@ -132,8 +132,25 @@ AudioProcessorEditor* DemoJuceFilter::createEditor()
 
 void DemoJuceFilter::getStateInformation (MemoryBlock& destData)
 {
-    XmlElement xmlState (T("MYPLUGINSETTINGS"));
+    XmlElement xmlState (T("BITMUNGLER"));
     xmlState.setAttribute (T("pluginVersion"), 1);
+
+	xmlState.setAttribute (T("xorBits"), serializeArray (xorBits));
+	xmlState.setAttribute (T("xorWith"), xorWith);
+	xmlState.setAttribute (T("xorProcessing"), xorProcessing);
+
+	xmlState.setAttribute (T("andBits"), serializeArray (andBits));
+	xmlState.setAttribute (T("andWith"), andWith);
+	xmlState.setAttribute (T("andProcessing"), andProcessing);
+
+	xmlState.setAttribute (T("clearBits"), serializeArray (clearBits));
+	xmlState.setAttribute (T("clearProcessing"), clearProcessing);
+
+	xmlState.setAttribute (T("setBits"), serializeArray (setBits));
+	xmlState.setAttribute (T("setProcessing"), setProcessing);
+
+	Logger::writeToLog (xmlState.createDocument (String::empty));
+
     copyXmlToBinary (xmlState, destData);
 }
 
@@ -142,10 +159,28 @@ void DemoJuceFilter::setStateInformation (const void* data, int sizeInBytes)
     XmlElement* const xmlState = getXmlFromBinary (data, sizeInBytes);
     if (xmlState != 0)
     {
-        if (xmlState->hasTagName (T("MYPLUGINSETTINGS")))
+        if (xmlState->hasTagName (T("BITMUNGLER")))
         {
-            sendChangeMessage (this);
+			Logger::writeToLog (xmlState->createDocument (String::empty));
+
+			xorProcessing = xmlState->getBoolAttribute (T("xorProcessing"));
+			andProcessing = xmlState->getBoolAttribute (T("andProcessing"));
+			clearProcessing = xmlState->getBoolAttribute (T("clearProcessing"));
+			setProcessing = xmlState->getBoolAttribute (T("setProcessing"));
+
+			unserializeArray (xmlState->getStringAttribute (T("xorBits")), xorBits);
+			xorWith = xmlState->getBoolAttribute (T("xorWith"));
+
+			unserializeArray (xmlState->getStringAttribute (T("andBits")), andBits);
+			andWith = xmlState->getBoolAttribute (T("andWith"));
+
+			unserializeArray (xmlState->getStringAttribute (T("setBits")), setBits);
+			unserializeArray (xmlState->getStringAttribute (T("clearBits")), clearBits);
+
+            if (editor)
+				editor->setProgram();
         }
+
         delete xmlState;
     }
 }
@@ -190,7 +225,11 @@ float DemoJuceFilter::process(float sample)
 	{
 		if (xorBits[x] && xorProcessing)
 		{
-			ret = xorbit (sample, x, xorWith[x]);
+			ret = xorbit (sample, x, xorWith);
+		}
+		if (andBits[x] && andProcessing)
+		{
+			ret = andbit (sample, x, andWith);
 		}
 		if (setBits[x] && setProcessing)
 		{
@@ -207,27 +246,23 @@ float DemoJuceFilter::process(float sample)
 
 void DemoJuceFilter::setXorBit (int pos, bool bit)
 {	
-	clearXorTable();
 	xorBits.set (pos-1, true);
-	xorWith.set (pos-1, bit);
+	xorWith = bit;
 }
 
 void DemoJuceFilter::setAndBit (int pos, bool bit)
 {
-	clearAndTable();
 	andBits.set (pos-1, true);
-	andWith.set (pos-1, bit);
+	andWith = bit;
 }
 
 void DemoJuceFilter::setClearBit (int pos)
 {
-	clearClearTable();
 	clearBits.set (pos-1, true);
 }
 
 void DemoJuceFilter::setSetBit (int pos)
 {
-	clearSetTable();
 	setBits.set (pos-1, true);
 }
 
@@ -237,7 +272,7 @@ void DemoJuceFilter::clearXorTable()
 	for (int x=0; x<32; x++)
 	{
 		xorBits.set (x, false);
-		xorWith.set (x, false);
+		xorWith = false;
 	}
 }
 
@@ -247,7 +282,7 @@ void DemoJuceFilter::clearAndTable()
 	for (int x=0; x<32; x++)
 	{
 		andBits.set (x, false);
-		andWith.set (x, false);
+		andWith = false;
 	}
 }
 
@@ -274,7 +309,9 @@ void DemoJuceFilter::clearTable()
 	for (int x=0; x<32; x++)
 	{
 		xorBits.set (x, false);
-		xorWith.set (x, false);
+		xorWith = false;
+		andBits.set (x, false);
+		andWith = false;
 		clearBits.set (x, false);
 		setBits.set (x, false);
 	}
@@ -303,4 +340,138 @@ void DemoJuceFilter::setProcess (int processDef, bool b)
 		default:
 			break;
 	}
+}
+
+String DemoJuceFilter::serializeArray (Array <bool>a)
+{
+	String str;
+
+	for (int x=0; x<a.size(); x++)
+	{
+		if (x==0)
+			str << a[x];
+		else
+			str <<T(",")<< a[x];
+	}
+
+	return (str);
+}
+
+void DemoJuceFilter::unserializeArray (String data, Array <bool>&a)
+{
+	StringArray ar;
+	ar.addTokens (data, T(","), String::empty);
+
+	for (int x=0; x<ar.size(); x++)
+	{
+		a.set (x, (bool)ar[x].getIntValue());
+	}
+}
+
+int DemoJuceFilter::getXorFirstBit()
+{
+	for (int x=0; x<32; x++)
+	{
+		if (xorBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getXorLast()
+{
+	for (int x=31; x>=0; x--)
+	{
+		if (xorBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getAndFirst()
+{
+	for (int x=0; x<32; x++)
+	{
+		if (andBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getAndLast()
+{
+	for (int x=31; x>=0; x--)
+	{
+		if (andBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getClearFirst()
+{
+	for (int x=0; x<32; x++)
+	{
+		if (clearBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getClearLast()
+{
+	for (int x=31; x>=0; x--)
+	{
+		if (clearBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getSetFirst()
+{
+	for (int x=0; x<32; x++)
+	{
+		if (setBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+int DemoJuceFilter::getSetLast()
+{
+	for (int x=31; x>=0; x--)
+	{
+		if (setBits[x])
+			return (x+1);
+	}
+
+	return (0);
+}
+
+bool DemoJuceFilter::getXorWith()
+{
+	return (xorWith);
+}
+
+bool DemoJuceFilter::getAndWith()
+{
+	return (andWith);
+}
+
+void DemoJuceFilter::setXorWith(bool b)
+{
+	xorWith = b;
+}
+
+void DemoJuceFilter::setAndWith(bool b)
+{
+	andWith = b;
 }
