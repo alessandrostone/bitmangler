@@ -136,7 +136,6 @@ public:
 	bool getAndWith();
 	void setXorWith(bool b);
 	void setAndWith(bool b);
-	void setRange(int min, int max, int t);
 
 	bool xorProcessing, andProcessing, clearProcessing, setProcessing;
 	

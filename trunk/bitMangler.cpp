@@ -76,52 +76,127 @@ float DemoJuceFilter::getParameter (int index)
 void DemoJuceFilter::setParameter (int index, float newValue)
 {
 	Logger::writeToLog (T("setParameter(): ") + String(index) + T(" value: ") + String(newValue*32));
-
+	int x=0;
+	int p;
     switch (index)
 	{
 		case kXorToggle:
-			xorProcessing = (bool)newValue;
+			if (newValue == 1.0f)
+				xorProcessing = true;
+			else
+				xorProcessing = false;
 			break;
 
 		case kAndToggle:
-			andProcessing = (bool)newValue;
+			if (newValue == 1.0f)
+				andProcessing = true;
+			else
+				andProcessing = false;
 			break;
 
 		case kClearToggle:
-			clearProcessing = (bool)newValue;
+			if (newValue == 1.0f)
+				clearProcessing = true;
+			else
+				clearProcessing = false;
 			break;
 
 		case kSetToggle:
-			setProcessing = (bool)newValue;
+			if (newValue == 1.0f)
+				setProcessing = true;
+			else
+				setProcessing = false;
 			break;
 
 		case kXorMod:
-			xorWith = (bool)newValue;
+			if (newValue == 1.0f)
+				xorWith = true;
+			else
+				xorWith = false;
 			break;
 
 		case kAndMod:
-			andWith = (bool)newValue;
+			if (newValue == 1.0f)
+				andWith = true;
+			else
+				andWith = false;
 			break;
 
 		case kXorMin:
-			setRange (newValue*32, getXorLast(), bitManglerEditor::XOR);
+			p = getXorLast();
+			clearXorTable();
+			for (x=(int)(newValue*32); x<=p; x++)
+			{
+				setXorBit (x, xorWith);
+			}
 			break;
 
 		case kXorMax:
-			setRange (getXorFirst(), newValue*32, bitManglerEditor::XOR);
+			p = getXorFirst();
+			clearXorTable();
+			for (x=p; x<=(int)(newValue*32); x++)
+			{
+				setXorBit (x, xorWith);
+			}
 			break;
 
 		case kAndMin:
-			setRange (newValue*32, getAndLast(), bitManglerEditor::AND);
+			p = getAndLast();
+			clearAndTable();
+			for (x=(int)(newValue*32); x<=p; x++)
+			{
+				setAndBit (x, andWith);
+			}
 			break;
 
 		case kAndMax:
-			setRange (getAndFirst(), newValue*32, bitManglerEditor::AND);
+			p = getAndFirst();
+			clearAndTable();
+			for (x=p; x<=(int)(newValue*32); x++)
+			{
+				setAndBit (x, andWith);
+			}
 			break;
 
+		case kSetMin:
+			p = getSetLast();
+			clearSetTable();
+			for (x=(int)(newValue*32); x<=p; x++)
+			{
+				setSetBit (x);
+			}
+			break;
+
+		case kSetMax:
+			p = getSetFirst();
+			clearSetTable();
+			for (x=p; x<=(int)(newValue*32); x++)
+			{
+				setSetBit (x);
+			}
+			break;
+
+		case kClearMin:
+			p = getClearLast();
+			clearClearTable();
+			for (x=(int)(newValue*32); x<=p; x++)
+			{
+				setClearBit (x);
+			}
+			break;
+
+		case kClearMax:
+			p = getClearFirst();
+			clearClearTable();
+			for (x=p; x<=(int)(newValue*32); x++)
+			{
+				setClearBit (x);
+			}
+			break;
 		default:
 			break;
 	}
+	sendChangeMessage (this);
 }
 
 const String DemoJuceFilter::getParameterName (int index)
@@ -180,9 +255,9 @@ const String DemoJuceFilter::getParameterText (int index)
 		case kSetToggle:
 			return (String(setProcessing));
 		case kXorMod:
-			return (String(xorWith));
+			return (String((int)xorWith));
 		case kAndMod:
-			return (String(andWith));
+			return (String((int)andWith));
 		case kXorMin:
 			return (String(getXorFirst()));
 		case kXorMax:
@@ -268,7 +343,7 @@ void DemoJuceFilter::processBlock (AudioSampleBuffer& buffer,
 
 			if (x == 2 && channel == 0 && bufferCycle == 0 && editor)
 			{
-				sendChangeMessage (this);
+				sendChangeMessage (0);
 			}
 		}
 	}
@@ -399,24 +474,36 @@ float DemoJuceFilter::process(float sample)
 }
 
 void DemoJuceFilter::setXorBit (int pos, bool bit)
-{	
+{
+	if (pos == 0)
+		pos=1;
+
 	xorBits.set (pos-1, true);
 	xorWith = bit;
 }
 
 void DemoJuceFilter::setAndBit (int pos, bool bit)
 {
+	if (pos == 0)
+		pos=1;
+
 	andBits.set (pos-1, true);
 	andWith = bit;
 }
 
 void DemoJuceFilter::setClearBit (int pos)
 {
+	if (pos == 0)
+		pos=1;
+
 	clearBits.set (pos-1, true);
 }
 
 void DemoJuceFilter::setSetBit (int pos)
 {
+	if (pos == 0)
+		pos=1;
+
 	setBits.set (pos-1, true);
 }
 
@@ -518,7 +605,15 @@ void DemoJuceFilter::unserializeArray (String data, Array <bool>&a)
 
 	for (int x=0; x<ar.size(); x++)
 	{
-		a.set (x, (bool)ar[x].getIntValue());
+		const int k = ar[x].getIntValue();
+		bool b;
+
+		if (k == 1)
+			b = true;
+		else
+			b = false;
+		
+		a.set (x, b);
 	}
 }
 
@@ -628,144 +723,4 @@ void DemoJuceFilter::setXorWith(bool b)
 void DemoJuceFilter::setAndWith(bool b)
 {
 	andWith = b;
-}
-
-void DemoJuceFilter::setRange(int min, int max, int t)
-{
-	if (min <= 0 || max <= 0)
-		return;
-
-	if (min > max)
-		return;
-
-	if (max == 0 && min == 0)
-		return;
-
-	int x=0;
-
-	if (max == 0 && min >= 1)
-	{
-		/* set only min */
-		switch (t)
-		{
-			case bitManglerEditor::XOR:
-				max = getXorLast();
-				for (x=min; x<=max; x++)
-				{
-					setXorBit (x, xorWith);
-				}
-				break;
-
-			case bitManglerEditor::AND:
-				max = getAndLast();
-				for (x=min; x<=max; x++)
-				{
-					setAndBit (x, xorWith);
-				}
-				break;
-
-			case bitManglerEditor::CLEAR:
-				max = getClearLast();
-				for (x=min; x<=max; x++)
-				{
-					setClearBit (x);
-				}
-				break;
-
-			case bitManglerEditor::SET:
-				max = getSetLast();
-				for (x=min; x<=max; x++)
-				{
-					setSetBit (x);
-				}
-				break;
-			default:
-				break;
-		}
-	}
-	else if (min == 0 && max <= 32)
-	{
-		/* set only max */
-		switch (t)
-		{
-			case bitManglerEditor::XOR:
-				min = getXorFirst();
-				for (x=min; x<=max; x++)
-				{
-					setXorBit (x, xorWith);
-				}
-				break;
-
-			case bitManglerEditor::AND:
-				min = getAndFirst();
-				for (x=min; x<=max; x++)
-				{
-					setAndBit (x, xorWith);
-				}
-				break;
-
-			case bitManglerEditor::CLEAR:
-				min = getClearFirst();
-				for (x=min; x<=max; x++)
-				{
-					setClearBit (x);
-				}
-				break;
-
-			case bitManglerEditor::SET:
-				min = getSetFirst();
-				for (x=min; x<=max; x++)
-				{
-					setSetBit (x);
-				}
-				break;
-
-			default:
-				break;
-		}
-	}
-	else if (min >= 1 && max <= 32)
-	{
-		/* set both */
-		switch (t)
-		{
-			case bitManglerEditor::XOR:
-				min = getXorFirst();
-				max = getXorLast();
-				for (x=min; x<=max; x++)
-				{
-					setXorBit (x, xorWith);
-				}
-				break;
-
-			case bitManglerEditor::AND:
-				min = getAndFirst();
-				max = getAndLast();
-				for (x=min; x<=max; x++)
-				{
-					setAndBit (x, xorWith);
-				}
-				break;
-
-			case bitManglerEditor::CLEAR:
-				min = getClearFirst();
-				max = getClearLast();
-				for (x=min; x<=max; x++)
-				{
-					setClearBit (x);
-				}
-				break;
-
-			case bitManglerEditor::SET:
-				min = getSetFirst();
-				max = getSetLast();
-				for (x=min; x<=max; x++)
-				{
-					setSetBit (x);
-				}
-				break;
-			default:
-				break;
-		}
-	}
 }
