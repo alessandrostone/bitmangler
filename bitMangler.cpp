@@ -450,7 +450,7 @@ float DemoJuceFilter::process(float sample)
 
 	for (int x=0; x<32; x++)
 	{
-		if (xorBits[x] && xorProcessing)
+/*		if (xorBits[x] && xorProcessing)
 		{
 			ret = xorbit (sample, x, xorWith);
 		}
@@ -466,6 +466,7 @@ float DemoJuceFilter::process(float sample)
 		{
 			ret = clearbit (sample, x);
 		}
+*/
 	}
 
 	return (ret);

@@ -69,7 +69,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "bitManglerVst_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "bitManglerVst_EXPORTS" /FR /YX /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MTd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "bitManglerVst_EXPORTS" /FR /FD /GZ /Zm200 /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x415 /d "_DEBUG"
@@ -92,6 +93,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\bitFloat.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\bitMangler.cpp
 # End Source File
 # Begin Source File
@@ -100,12 +105,20 @@ SOURCE=.\bitManglerEditor.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\bitManglerFloat.cpp
+SOURCE=.\vstParameter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\vstParameterContainer.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\bitFloat.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\bitMangler.h
@@ -120,7 +133,11 @@ SOURCE=.\bitManglerEditor.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\bitManglerFloat.h
+SOURCE=.\vstParameter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\vstParameterContainer.h
 # End Source File
 # End Group
 # Begin Group "wrapper"
