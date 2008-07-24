@@ -31,7 +31,7 @@
 
 #ifndef DEMOJUCEPLUGINFILTER_H
 #define DEMOJUCEPLUGINFILTER_H
-#include "bitManglerFloat.h"
+#include "bitFloat.h"
 
 class bitManglerEditor;
 

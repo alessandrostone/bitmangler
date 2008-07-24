@@ -1,4 +1,4 @@
-#include "bitManglerFloat.h"
+#include "bitFloat.h"
 
 bitFloat::bitFloat (float v)
 {

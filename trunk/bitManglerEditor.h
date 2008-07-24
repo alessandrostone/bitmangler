@@ -25,7 +25,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "juce.h"
 #include "bitMangler.h"
-#include "bitManglerFloat.h"
+#include "bitFloat.h"
 
 #define BITS_FLT 32
 #define MANT_FLT 23

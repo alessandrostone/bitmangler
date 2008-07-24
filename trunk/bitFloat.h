@@ -1,3 +1,6 @@
+#ifndef BITFLOAT_H
+#define BITFLOAT_H
+
 #include <math.h>
 #include <float.h>
 #include <limits.h>
@@ -55,3 +58,5 @@ class bitFloat
 
 		floatUnion currentValue;
 };
+
+#endif
