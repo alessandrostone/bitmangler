@@ -93,15 +93,15 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\bitFloat.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\bitMangler.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\bitManglerEditor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\bitManglerFloat.cpp
 # End Source File
 # Begin Source File
 
@@ -118,10 +118,6 @@ SOURCE=.\bitMangler.h
 # Begin Source File
 
 SOURCE=.\bitManglerEditor.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\bitManglerFloat.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

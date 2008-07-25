@@ -179,6 +179,8 @@ private:
 
 	Array <bool>clearBits;
 	Array <bool>setBits;
+
+	bitFloat myFloat;
 };
 
 

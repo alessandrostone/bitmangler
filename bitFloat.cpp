@@ -5,34 +5,19 @@ bitFloat::bitFloat (float v)
 	currentValue.f = v;
 }
 
+bitFloat::bitFloat()
+{
+	currentValue.f = 0.0f;
+}
+
 void bitFloat::setValue (float v)
 {
 	currentValue.f = v;
 }
 
-void bitFloat::setbit (unsigned int bit)
+float bitFloat::getValue ()
 {
-	currentValue.i = currentValue.i | (1<<bit);
-}
-
-void bitFloat::clearbit (unsigned int bit)
-{
-	currentValue.i = currentValue.i &~ (1<<bit);
-}
-
-void bitFloat::xorbit (unsigned int bit, int b)
-{
-	currentValue.i = currentValue.i ^ (b<<bit);
-}
-
-void bitFloat::andbit (unsigned int bit, int b)
-{
-	currentValue.i = currentValue.i & (b<<bit);
-}
-
-void bitFloat::orbit (unsigned int bit, int b)
-{
-	currentValue.i = currentValue.i | (b<<bit);
+	return (currentValue.f);
 }
 
 String bitFloat::getBinaryString (floatint b, int d)
