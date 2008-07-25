@@ -38,13 +38,35 @@ class bitFloat
 {
 	public:
 		bitFloat(float v);
-		void clearbit (unsigned int bit);
-		void setbit (unsigned int bit);
-		void xorbit (unsigned int bit, int b);
-		void andbit (unsigned int bit, int b);
-		void orbit (unsigned int bit, int b);
+		bitFloat();
+		
+		/* inline method hve to be here to prevent linker errors */
+		inline void setbit (unsigned int bit)
+		{
+			currentValue.i = currentValue.i | (1<<bit);
+		}
+		inline void clearbit (unsigned int bit)
+		{
+			currentValue.i = currentValue.i &~ (1<<bit);
+		}
+
+		inline void xorbit (unsigned int bit, int b)
+		{
+			currentValue.i = currentValue.i ^ (b<<bit);
+		}
+
+		inline void andbit (unsigned int bit, int b)
+		{
+			currentValue.i = currentValue.i & (b<<bit);
+		}
+
+		inline void orbit (unsigned int bit, int b)
+		{
+			currentValue.i = currentValue.i | (b<<bit);
+		}
+		
 		void setValue (float v);
-		void getValue (float v);
+		float getValue ();
 		floatint getLongValue ();
 		String getFloatAsString();
 		String getBinaryString(floatint b, int d);

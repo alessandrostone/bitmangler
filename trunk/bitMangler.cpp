@@ -27,7 +27,7 @@ DemoJuceFilter::~DemoJuceFilter()
 
 const String DemoJuceFilter::getName() const
 {
-    return "Juce Demo Filter";
+    return "bitMangler";
 }
 
 int DemoJuceFilter::getNumParameters()
@@ -37,249 +37,20 @@ int DemoJuceFilter::getNumParameters()
 
 float DemoJuceFilter::getParameter (int index)
 {
-	Logger::writeToLog (T("getParameter(): ") + String(index));
-
-	switch (index)
-	{
-		case kXorToggle:
-			return (float)xorProcessing;
-		case kAndToggle:
-			return (float)andProcessing;
-		case kClearToggle:
-			return (float)clearProcessing;
-		case kSetToggle:
-			return (float)setProcessing;
-		case kXorMin:
-			return (float)getXorFirst()/32;
-		case kXorMax:
-			return (float)getXorLast()/32;
-		case kAndMin:
-			return (float)getAndFirst()/32;
-		case kAndMax:
-			return (float)getAndLast()/32;
-		case kClearMin:
-			return (float)getClearFirst()/32;
-		case kClearMax:
-			return (float)getClearLast()/32;
-		case kSetMin:
-			return (float)getSetFirst()/32;
-		case kSetMax:
-			return (float)getSetLast()/32;
-
-		default:
-			return (0.0);
-	}
-
 	return (0.0);
 }
 
 void DemoJuceFilter::setParameter (int index, float newValue)
 {
-	Logger::writeToLog (T("setParameter(): ") + String(index) + T(" value: ") + String(newValue*32));
-	int x=0;
-	int p;
-    switch (index)
-	{
-		case kXorToggle:
-			if (newValue == 1.0f)
-				xorProcessing = true;
-			else
-				xorProcessing = false;
-			break;
-
-		case kAndToggle:
-			if (newValue == 1.0f)
-				andProcessing = true;
-			else
-				andProcessing = false;
-			break;
-
-		case kClearToggle:
-			if (newValue == 1.0f)
-				clearProcessing = true;
-			else
-				clearProcessing = false;
-			break;
-
-		case kSetToggle:
-			if (newValue == 1.0f)
-				setProcessing = true;
-			else
-				setProcessing = false;
-			break;
-
-		case kXorMod:
-			if (newValue == 1.0f)
-				xorWith = true;
-			else
-				xorWith = false;
-			break;
-
-		case kAndMod:
-			if (newValue == 1.0f)
-				andWith = true;
-			else
-				andWith = false;
-			break;
-
-		case kXorMin:
-			p = getXorLast();
-			clearXorTable();
-			for (x=(int)(newValue*32); x<=p; x++)
-			{
-				setXorBit (x, xorWith);
-			}
-			break;
-
-		case kXorMax:
-			p = getXorFirst();
-			clearXorTable();
-			for (x=p; x<=(int)(newValue*32); x++)
-			{
-				setXorBit (x, xorWith);
-			}
-			break;
-
-		case kAndMin:
-			p = getAndLast();
-			clearAndTable();
-			for (x=(int)(newValue*32); x<=p; x++)
-			{
-				setAndBit (x, andWith);
-			}
-			break;
-
-		case kAndMax:
-			p = getAndFirst();
-			clearAndTable();
-			for (x=p; x<=(int)(newValue*32); x++)
-			{
-				setAndBit (x, andWith);
-			}
-			break;
-
-		case kSetMin:
-			p = getSetLast();
-			clearSetTable();
-			for (x=(int)(newValue*32); x<=p; x++)
-			{
-				setSetBit (x);
-			}
-			break;
-
-		case kSetMax:
-			p = getSetFirst();
-			clearSetTable();
-			for (x=p; x<=(int)(newValue*32); x++)
-			{
-				setSetBit (x);
-			}
-			break;
-
-		case kClearMin:
-			p = getClearLast();
-			clearClearTable();
-			for (x=(int)(newValue*32); x<=p; x++)
-			{
-				setClearBit (x);
-			}
-			break;
-
-		case kClearMax:
-			p = getClearFirst();
-			clearClearTable();
-			for (x=p; x<=(int)(newValue*32); x++)
-			{
-				setClearBit (x);
-			}
-			break;
-		default:
-			break;
-	}
-	sendChangeMessage (this);
 }
 
 const String DemoJuceFilter::getParameterName (int index)
 {
-	Logger::writeToLog (T("getParameterName(): ") + String(index));
-
-    switch (index)
-	{
-		case kXorToggle:
-			return (T("XOR Process"));
-		case kAndToggle:
-			return (T("AND Process"));
-		case kClearToggle:
-			return (T("CLEAR Process"));			
-		case kSetToggle:
-			return (T("SET Process"));
-		case kXorMod:
-			return (T("XOR Modulator"));
-		case kAndMod:
-			return (T("AND Modulator"));
-		case kXorMin:
-			return (T("XOR Range Start"));
-		case kXorMax:
-			return (T("XOR Range End"));
-		case kAndMin:
-			return (T("AND Range Start"));
-		case kAndMax:
-			return (T("AND Range End"));
-		case kClearMin:
-			return (T("CLEAR Range Start"));
-		case kClearMax:
-			return (T("CLEAR Range End"));
-		case kSetMin:
-			return (T("SET Range Start"));
-		case kSetMax:
-			return (T("SET Range End"));
-		case kProces:
-			return (T("Process"));
-		default:
-			break;
-	}
-
-	return (T("process"));
+	return (String::empty);
 }
 
 const String DemoJuceFilter::getParameterText (int index)
 {
-    switch (index)
-	{
-		case kXorToggle:
-			return (String(xorProcessing));
-		case kAndToggle:
-			return (String(andProcessing));
-		case kClearToggle:
-			return (String(clearProcessing));
-		case kSetToggle:
-			return (String(setProcessing));
-		case kXorMod:
-			return (String((int)xorWith));
-		case kAndMod:
-			return (String((int)andWith));
-		case kXorMin:
-			return (String(getXorFirst()));
-		case kXorMax:
-			return (String(getXorLast()));
-		case kAndMin:
-			return (String(getAndFirst()));
-		case kAndMax:
-			return (String(getAndLast()));
-		case kClearMin:
-			return (String(getClearFirst()));
-		case kClearMax:
-			return (String(getClearLast()));
-		case kSetMin:
-			return (String(getSetFirst()));
-		case kSetMax:
-			return (String(getSetLast()));
-		case kProces:
-			return (String(processing));
-		default:
-			break;
-	}
-
 	return (String::empty);
 }
 
@@ -446,30 +217,30 @@ float DemoJuceFilter::process(float sample)
 		return (sample);
 	}
 
-	float ret = sample;
+	myFloat.setValue(sample);
 
 	for (int x=0; x<32; x++)
 	{
-/*		if (xorBits[x] && xorProcessing)
+		if (xorBits[x] && xorProcessing)
 		{
-			ret = xorbit (sample, x, xorWith);
+			myFloat.xorbit (x, xorWith);
 		}
 		if (andBits[x] && andProcessing)
 		{
-			ret = andbit (sample, x, andWith);
+			myFloat.andbit (x, andWith);
 		}
 		if (setBits[x] && setProcessing)
 		{
-			ret = setbit (sample, x);
+			myFloat.setbit (x);
 		}
 		if (clearBits[x] && clearProcessing)
 		{
-			ret = clearbit (sample, x);
+			myFloat.clearbit (x);
 		}
-*/
+
 	}
 
-	return (ret);
+	return (myFloat.getValue());
 }
 
 void DemoJuceFilter::setXorBit (int pos, bool bit)
